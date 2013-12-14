@@ -32,43 +32,43 @@ class TestFile(unittest.TestCase):
   def test_dump_simple(self):
     fi = FileItem(name='filename.ext', body='some text.\n')
     self.assertEqual(
+      fi.dumps(),
       ('application/vnd.omads-file+xml', '1.2',
-       '<File><name>filename.ext</name><body>some text.\n</body></File>'),
-      fi.dumps())
+       '<File><name>filename.ext</name><body>some text.\n</body></File>'))
 
   #----------------------------------------------------------------------------
   def test_load_simple(self):
     fi  = FileItem.loads('<File><name>filename.ext</name><body>some text.\n</body></File>')
     chk = FileItem(name='filename.ext', body='some text.\n')
-    self.assertEqual(chk, fi)
+    self.assertEqual(fi, chk)
 
   #----------------------------------------------------------------------------
   def test_dump_attributes(self):
     fi = FileItem(name='n', hidden=True, system=False)
     self.assertEqual(
+      fi.dumps(),
       ('application/vnd.omads-file+xml', '1.2',
-       '<File><name>n</name><attributes><h>true</h><s>false</s></attributes></File>'),
-      fi.dumps())
+       '<File><name>n</name><attributes><h>true</h><s>false</s></attributes></File>'))
 
   #----------------------------------------------------------------------------
   def test_load_attributes(self):
     fi  = FileItem.loads('<File><name>n</name><attributes><h>true</h><s>false</s></attributes></File>')
     chk = FileItem(name='n', hidden=True, system=False)
-    self.assertEqual(chk, fi)
+    self.assertEqual(fi, chk)
 
   #----------------------------------------------------------------------------
   def test_dump_dates(self):
     fi = FileItem(id='0', name='n', created=1234567890)
     self.assertEqual(
+      fi.dumps(),
       ('application/vnd.omads-file+xml', '1.2',
-       '<File><name>n</name><created>20090213T233130Z</created></File>'),
-      fi.dumps())
+       '<File><name>n</name><created>20090213T233130Z</created></File>'))
 
   #----------------------------------------------------------------------------
   def test_load_dates(self):
     fi  = FileItem.loads('<File><name>n</name><created>20090213T233130Z</created></File>')
     chk = FileItem(name='n', created=1234567890)
-    self.assertEqual(chk, fi)
+    self.assertEqual(fi, chk)
 
 #------------------------------------------------------------------------------
 # end of $Id$

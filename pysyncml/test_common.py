@@ -31,28 +31,28 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_fullClassname(self):
-    self.assertEqual('pysyncml.test_common.TestCommon',
-                     common.fullClassname(self))
+    self.assertEqual(
+      common.fullClassname(self), 'pysyncml.test_common.TestCommon')
 
   #----------------------------------------------------------------------------
   def test_indent(self):
     buf = sio()
     out = common.IndentStream(buf, '>>')
     out.write('hi')
-    self.assertMultiLineEqual('>>hi', buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), '>>hi')
     out.write(', there!')
     out.write('\nhow are you?\n')
-    self.assertMultiLineEqual('>>hi, there!\n>>how are you?\n', buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), '>>hi, there!\n>>how are you?\n')
 
   #----------------------------------------------------------------------------
   def test_indent_print(self):
     buf = sio()
     out = common.IndentStream(buf, '>>')
     out.write('hi')
-    self.assertMultiLineEqual('>>hi', buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), '>>hi')
     print >>out, ', there!'
     print >>out, 'how are you?'
-    self.assertMultiLineEqual('>>hi, there!\n>>how are you?\n', buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), '>>hi, there!\n>>how are you?\n')
 
   #----------------------------------------------------------------------------
   def test_version(self):
@@ -78,7 +78,7 @@ class TestCommon(unittest.TestCase):
 |                  10 local changes and 2 remote changes.                   |
 +---------------------------------------------------------------------------+
 '''.lstrip()
-    self.assertMultiLineEqual(chk, buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), chk)
 
   #----------------------------------------------------------------------------
   def test_describeStats_noTotals(self):
@@ -96,7 +96,7 @@ class TestCommon(unittest.TestCase):
 |   note |  <>  |  10 |  -  |  -  |  -  |  -  |  -  |   2 |  -  |  -  |  -  |
 +--------+------+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
 '''.lstrip()
-    self.assertMultiLineEqual(chk, buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), chk)
 
   #----------------------------------------------------------------------------
   def test_describeStats_title(self):
@@ -118,7 +118,7 @@ class TestCommon(unittest.TestCase):
 |                  10 local changes and 2 remote changes.                   |
 +---------------------------------------------------------------------------+
 '''.lstrip()
-    self.assertMultiLineEqual(chk, buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), chk)
 
   #----------------------------------------------------------------------------
   def test_describeStats_errors(self):
@@ -140,7 +140,7 @@ class TestCommon(unittest.TestCase):
 |              10 local changes, 1 remote change and 3 errors.              |
 +---------------------------------------------------------------------------+
 '''.lstrip()
-    self.assertMultiLineEqual(chk, buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), chk)
 
   #----------------------------------------------------------------------------
   def test_describeStats_multiwide(self):
@@ -165,7 +165,7 @@ class TestCommon(unittest.TestCase):
 |                  1,310 local changes and 10,387 remote changes.                  |
 +----------------------------------------------------------------------------------+
 '''.lstrip()
-    self.assertMultiLineEqual(chk, buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), chk)
 
   #----------------------------------------------------------------------------
   def test_describeStats_titleAndTotals(self):
@@ -185,7 +185,7 @@ class TestCommon(unittest.TestCase):
 | 1,310 local changes and 10,387 remote changes. |
 +------------------------------------------------+
 '''.lstrip()
-    self.assertMultiLineEqual(chk, buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), chk)
 
   #----------------------------------------------------------------------------
   def test_describeStats_totals(self):
@@ -204,7 +204,7 @@ class TestCommon(unittest.TestCase):
 | 1,310 local changes and 10,387 remote changes. |
 +------------------------------------------------+
 '''.lstrip()
-    self.assertMultiLineEqual(chk, buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), chk)
     stats['note'].merged    = 3
     stats['note'].conflicts = 2
     stats['note'].hereErr   = 2
@@ -215,7 +215,7 @@ class TestCommon(unittest.TestCase):
 | 1,310 local changes, 10,387 remote changes and 2 errors: 3 merges and 2 conflicts. |
 +------------------------------------------------------------------------------------+
 '''.lstrip()
-    self.assertMultiLineEqual(chk, buf.getvalue())
+    self.assertMultiLineEqual(buf.getvalue(), chk)
 
 #------------------------------------------------------------------------------
 # end of $Id$

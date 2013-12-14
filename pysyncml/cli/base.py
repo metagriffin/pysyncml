@@ -685,9 +685,10 @@ class CommandLineSyncEngine(object):
         # TODO: enforce authentication...
         # if len(sconf.users) > 0:
         #   ...
-        #   self.assertEqual(adict(auth=pysyncml.NAMESPACE_AUTH_BASIC,
-        #                          username='guest', password='guest'),
-        #                    pysyncml.Context.getAuthInfo(request, None))
+        #   self.assertEqual(pysyncml.Context.getAuthInfo(request, None),
+        #                    adict(auth=pysyncml.NAMESPACE_AUTH_BASIC,
+        #                          username='guest', password='guest'))
+        #                    
         context, adapter = syncengine._makeAdapter()
         clen = 0
         if 'Content-Length' in self.headers:

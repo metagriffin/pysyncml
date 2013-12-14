@@ -123,11 +123,13 @@ def findxml(xml, xpath):
 #------------------------------------------------------------------------------
 class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqual):
 
+  maxDiff = None
+
   #----------------------------------------------------------------------------
-  def assertIntsNear(self, chk, val, offset=1):
+  def assertIntsNear(self, val, chk, offset=1):
     if chk - offset <= val and chk + offset >= val:
       return
-    self.assertEqual(chk, val)
+    self.assertEqual(val, chk)
 
   #----------------------------------------------------------------------------
   def setUp(self):
@@ -175,8 +177,9 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
     dir1 = self.items.add(FolderItem(name='subdir', parent=root.id))
     self.items.add(FileItem(name='bar.txt', body='content1', parent=dir1.id))
 
-    self.assertEqual(['', 'foo.txt', 'subdir', 'subdir/bar.txt'],
-                     [e.path for e in self.items.entries.values()])
+    self.assertEqual(
+      [e.path for e in self.items.entries.values()],
+      ['', 'foo.txt', 'subdir', 'subdir/bar.txt'])
 
     # step 2: client sends registration/initialization
     self.client.peer = proxy
@@ -265,8 +268,8 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
                 '</SyncML>')
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
 
     # step 3: server responds, client sets up routes and requests sync
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -412,9 +415,10 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
                 '</SyncML>')
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
-    self.assertEqual('http://www.example.com/sync;s=9D35ACF5AEDDD26AC875EE1286F3C048', proxy.session.respUri)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
+    self.assertEqual(proxy.session.respUri, 'http://www.example.com/sync;s=9D35ACF5AEDDD26AC875EE1286F3C048')
+
 
     # step 4: server responds, client sends all of its data (none in this case)
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -564,8 +568,9 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
                 '</SyncML>')
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
+
 
     # step 5: server responds, client sends mapping
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -715,10 +720,11 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
 
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
-    self.assertEqual(['', 'foo.txt', 'subdir', 'subdir/bar.txt', 'subdir/bar2.txt'],
-                     [e.path for e in self.items.entries.values()])
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
+    self.assertEqual(
+      [e.path for e in self.items.entries.values()],
+      ['', 'foo.txt', 'subdir', 'subdir/bar.txt', 'subdir/bar2.txt'])
 
     # step 6: server responds, client sends nothing
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -767,7 +773,9 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
     # this is only because i've interrupted the normal Adapter handling...
     self.client._dbsave()
     stats = self.client._session2stats(session)
-    self.assertTrimDictEqual(dict(clitree=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, hereAdd=1, peerAdd=1)), stats)
+    self.assertTrimDictEqual(
+      stats,
+      dict(clitree=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, hereAdd=1, peerAdd=1)))
 
   # #----------------------------------------------------------------------------
   # def test_sync_tree(self):
@@ -813,8 +821,8 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
     nextAnchor = findxml(proxy.request.body, './SyncBody/Alert/Item/Meta/Anchor/Next')
     self.assertTrue(lastAnchor is not None)
     self.assertTrue(nextAnchor is not None)
-    self.assertIntsNear(ts(), int(lastAnchor), offset=2)
-    self.assertIntsNear(ts(), int(nextAnchor), offset=1)
+    self.assertIntsNear(int(lastAnchor), ts(), offset=2)
+    self.assertIntsNear(int(nextAnchor), ts(), offset=1)
 
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
@@ -863,8 +871,8 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
 
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
 
     # step 3: server responds, client sends local changes
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -1013,9 +1021,9 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
 
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
-    self.assertEqual('http://www.example.com/sync;s=9D35ACF5AEDDD26AC875EE1286F3C048', proxy.session.respUri)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
+    self.assertEqual(proxy.session.respUri, 'http://www.example.com/sync;s=9D35ACF5AEDDD26AC875EE1286F3C048')
 
     # step 4: server responds (nothing to sync in this case)
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -1130,8 +1138,8 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
                 '</SyncML>')
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
 
     # step 5: server responds with status to header, and client terminates
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -1171,7 +1179,9 @@ class TestTreeClient(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDict
     # this is only because i've interrupted the normal Adapter handling...
     self.client._dbsave()
     stats = self.client._session2stats(session)
-    self.assertTrimDictEqual(dict(clitree=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, peerMod=2, peerDel=1)), stats)
+    self.assertTrimDictEqual(
+      stats,
+      dict(clitree=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, peerMod=2, peerDel=1)))
 
 #  #----------------------------------------------------------------------------
 #  def test_sync_tree_serverupdate(self):

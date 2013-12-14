@@ -33,15 +33,15 @@ class TestAttributeChangeTracker(unittest.TestCase):
   #----------------------------------------------------------------------------
   def test_null(self):
     ct = AttributeChangeTracker()
-    self.assertEqual('', ct.getFullChangeSpec())
-    self.assertEqual('', ct.getChangeSpec())
+    self.assertEqual(ct.getFullChangeSpec(), '')
+    self.assertEqual(ct.getChangeSpec(), '')
     ct = AttributeChangeTracker('add:first|mod:mi@vJ|del:tel-pager@v1234')
-    self.assertEqual('add:first|mod:mi@vJ|del:tel-pager@v1234', ct.getFullChangeSpec())
-    self.assertEqual('', ct.getChangeSpec())
+    self.assertEqual(ct.getFullChangeSpec(), 'add:first|mod:mi@vJ|del:tel-pager@v1234')
+    self.assertEqual(ct.getChangeSpec(), '')
     ct = AttributeChangeTracker('add:first|mod:mi@vJ|del:tel-pager@v1234')
     ct.append('last', constants.ITEM_ADDED)
-    self.assertEqual('add:first,last|mod:mi@vJ|del:tel-pager@v1234', ct.getFullChangeSpec())
-    self.assertEqual('add:last', ct.getChangeSpec())
+    self.assertEqual(ct.getFullChangeSpec(), 'add:first,last|mod:mi@vJ|del:tel-pager@v1234')
+    self.assertEqual(ct.getChangeSpec(), 'add:last')
 
   #----------------------------------------------------------------------------
   def test_changespec_gen_simple(self):
@@ -51,7 +51,7 @@ class TestAttributeChangeTracker(unittest.TestCase):
     ct.append('surname', constants.ITEM_MODIFIED, 'Smith')
     ct.append('mi', constants.ITEM_MODIFIED, 'J')
     chk = 'add:first|mod:mi@vJ,surname@vSmith|del:tel-pager@v1234'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_changespec_gen_simpleWithEscape(self):
@@ -61,7 +61,7 @@ class TestAttributeChangeTracker(unittest.TestCase):
     ct.append('surname', constants.ITEM_MODIFIED, 'Smith')
     ct.append('mi', constants.ITEM_MODIFIED, 'J')
     chk = 'add:first|mod:mi@vJ,surname@vSmith|del:tel-pager@v%2B1-888-555-1212'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_changespec_gen_overwrite(self):
@@ -72,14 +72,14 @@ class TestAttributeChangeTracker(unittest.TestCase):
     ct.append('surname', constants.ITEM_MODIFIED, 'Smith')
     ct.append('mi', constants.ITEM_DELETED, 'K')
     chk = 'add:first|mod:surname@vSmith|del:mi@vJ,tel-pager@v1234'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_changespec_parse_overwrite(self):
     ct = AttributeChangeTracker('add:first|mod:mi@vJ,surname@vSmith|del:tel-pager@v1234')
     ct.append('mi', constants.ITEM_DELETED, 'K')
     chk = 'add:first|mod:surname@vSmith|del:mi@vJ,tel-pager@v1234'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_conflict(self):
@@ -88,29 +88,35 @@ class TestAttributeChangeTracker(unittest.TestCase):
     # note: not checking for identical changes at the ChangeTracker level
     #       since that should be done at the agent level (ie. if new remote
     #       value == new local value --> no problem).
-    self.assertRaises(ConflictError, ct.isChange, 'first', constants.ITEM_ADDED, 'Joe')
-    self.assertEqual('suffix', ct.isChange('suffix', constants.ITEM_MODIFIED, 'Sr.'))
-    self.assertEqual('suffix', ct.isChange('suffix', constants.ITEM_ADDED, 'Sr.'))
-    self.assertRaises(ConflictError, ct.isChange, 'mi', constants.ITEM_MODIFIED, 'F')
-    self.assertEqual(None, ct.isChange('mi', constants.ITEM_ADDED, 'J'))
-    self.assertRaises(ConflictError, ct.isChange, 'tel-pager', constants.ITEM_MODIFIED, '+1-modified-value')
-    self.assertEqual(None, ct.isChange('tel-pager', constants.ITEM_ADDED, '1234'))
+    with self.assertRaises(ConflictError) as cm:
+      ct.isChange('first', constants.ITEM_ADDED, 'Joe')
+    self.assertEqual(ct.isChange('suffix', constants.ITEM_MODIFIED, 'Sr.'), 'suffix')
+    self.assertEqual(ct.isChange('suffix', constants.ITEM_ADDED, 'Sr.'), 'suffix')
+    with self.assertRaises(ConflictError) as cm:
+      ct.isChange('mi', constants.ITEM_MODIFIED, 'F')
+    self.assertEqual(ct.isChange('mi', constants.ITEM_ADDED, 'J'), None)
+    with self.assertRaises(ConflictError) as cm:
+      ct.isChange('tel-pager', constants.ITEM_MODIFIED, '+1-modified-value')
+    self.assertEqual(ct.isChange('tel-pager', constants.ITEM_ADDED, '1234'), None)
     # TODO: HM. THIS SHOULDN'T BE VALID...
-    self.assertEqual(None, ct.isChange('tel-pager', constants.ITEM_DELETED))
+    self.assertEqual(ct.isChange('tel-pager', constants.ITEM_DELETED), None)
 
   #----------------------------------------------------------------------------
   def test_update_returnValue(self):
     base = 'add:first|mod:mi@vJ,surname@vSmith|del:tel-pager@v1234'
     ct = AttributeChangeTracker(base)
-    self.assertEqual('Joe', ct.update('first', 'Joe', None))
-    self.assertEqual('Joe', ct.update('first', 'Joe', 'Joe'))
-    self.assertEqual(None, ct.update('tel-home', '1234', None))
-    self.assertEqual('3456', ct.update('tel-work', '1234', '3456'))
-    self.assertEqual('6789', ct.update('tel-other', None, '6789'))
-    self.assertEqual('Sr.', ct.update('suffix', None, 'Sr.'))
-    self.assertRaises(ConflictError, ct.update, 'first', 'Joe', 'Joseph')
-    self.assertRaises(ConflictError, ct.update, 'mi', 'K', None)
-    self.assertRaises(ConflictError, ct.update, 'tel-pager', None, '0987')
+    self.assertEqual(ct.update('first', 'Joe', None), 'Joe')
+    self.assertEqual(ct.update('first', 'Joe', 'Joe'), 'Joe')
+    self.assertEqual(ct.update('tel-home', '1234', None), None)
+    self.assertEqual(ct.update('tel-work', '1234', '3456'), '3456')
+    self.assertEqual(ct.update('tel-other', None, '6789'), '6789')
+    self.assertEqual(ct.update('suffix', None, 'Sr.'), 'Sr.')
+    with self.assertRaises(ConflictError) as cm:
+      ct.update('first', 'Joe', 'Joseph')
+    with self.assertRaises(ConflictError) as cm:
+      ct.update('mi', 'K', None)
+    with self.assertRaises(ConflictError) as cm:
+      ct.update('tel-pager', None, '0987')
 
   # #----------------------------------------------------------------------------
   # # TODO: commenting this out for now as it is not implemented!...
@@ -124,35 +130,35 @@ class TestAttributeChangeTracker(unittest.TestCase):
   #   ct.pushChangeSpec()
   #   ct.append('y', constants.ITEM_MODIFIED, 'b')
   #   ct.pushChangeSpec()
-  #   self.assertEqual('A', ct.update('y', 'a', 'A'))
+  #   self.assertEqual(ct.update('y', 'a', 'A'), 'A')
 
   #----------------------------------------------------------------------------
   def test_update_delete(self):
     ct = AttributeChangeTracker('add:first|mod:mi@vJ,surname@vSmith|del:tel-pager@v1234')
-    self.assertEqual('Joe', ct.update('first', 'Joe', None))
-    self.assertEqual(None, ct.update('tel-home', '1234', None))
+    self.assertEqual(ct.update('first', 'Joe', None), 'Joe')
+    self.assertEqual(ct.update('tel-home', '1234', None), None)
     self.assertEqual(
-      'add:first|mod:mi@vJ,surname@vSmith|del:tel-home@v1234,tel-pager@v1234',
-      ct.getFullChangeSpec())
-    self.assertEqual('del:tel-home@v1234', ct.getChangeSpec())
+      ct.getFullChangeSpec(),
+      'add:first|mod:mi@vJ,surname@vSmith|del:tel-home@v1234,tel-pager@v1234')
+    self.assertEqual(ct.getChangeSpec(), 'del:tel-home@v1234')
 
   #----------------------------------------------------------------------------
   def test_update_modify(self):
     ct = AttributeChangeTracker('add:first|mod:mi@vJ,surname@vSmith|del:tel-pager@v1234')
-    self.assertEqual('4321', ct.update('tel-home', '1234', '4321'))
+    self.assertEqual(ct.update('tel-home', '1234', '4321'), '4321')
     self.assertEqual(
-      'add:first|mod:mi@vJ,surname@vSmith,tel-home@v1234|del:tel-pager@v1234',
-      ct.getFullChangeSpec())
-    self.assertEqual('mod:tel-home@v1234', ct.getChangeSpec())
+      ct.getFullChangeSpec(),
+      'add:first|mod:mi@vJ,surname@vSmith,tel-home@v1234|del:tel-pager@v1234')
+    self.assertEqual(ct.getChangeSpec(), 'mod:tel-home@v1234')
 
   #----------------------------------------------------------------------------
   def test_update_add(self):
     ct = AttributeChangeTracker('add:first|mod:mi@vJ,surname@vSmith|del:tel-pager@v1234')
-    self.assertEqual('1234', ct.update('tel-home', None, '1234'))
+    self.assertEqual(ct.update('tel-home', None, '1234'), '1234')
     self.assertEqual(
-      'add:first,tel-home|mod:mi@vJ,surname@vSmith|del:tel-pager@v1234',
-      ct.getFullChangeSpec())
-    self.assertEqual('add:tel-home', ct.getChangeSpec())
+      ct.getFullChangeSpec(),
+      'add:first,tel-home|mod:mi@vJ,surname@vSmith|del:tel-pager@v1234')
+    self.assertEqual(ct.getChangeSpec(), 'add:tel-home')
 
 #------------------------------------------------------------------------------
 class TestListChangeTracker(unittest.TestCase):
@@ -171,13 +177,13 @@ class TestListChangeTracker(unittest.TestCase):
     ct.append(6, constants.ITEM_MODIFIED, 'f')
     ct.append(7, constants.ITEM_ADDED)
     chk = '2:a,1:mc,1:dd,2:mf,1:a'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_changespec_parser_roundtrip(self):
     cspec = '2:a,1:mc,1:dd,2:mf,1:a'
     ct = ListChangeTracker(cspec)
-    self.assertEqual(cspec, str(ct))
+    self.assertEqual(str(ct), cspec)
 
   #----------------------------------------------------------------------------
   def test_changespec_gen_multi_byappend(self):
@@ -185,81 +191,81 @@ class TestListChangeTracker(unittest.TestCase):
     # from:  ab cdef
     # to:    abXC eFY
     ct = ListChangeTracker()
-    self.assertEqual([], ct.baseline)
-    self.assertEqual([], ct.current)
+    self.assertEqual(ct.baseline, [])
+    self.assertEqual(ct.current, [])
     ct.append(2, constants.ITEM_ADDED)
     ct.append(3, constants.ITEM_MODIFIED, 'c')
     ct.append(4, constants.ITEM_DELETED, 'd')
     ct.append(6, constants.ITEM_MODIFIED, 'f')
     ct.append(7, constants.ITEM_ADDED)
     # note: accessing internals...
-    self.assertEqual([], ct.baseline)
-    self.assertEqual([
-        {'index': 2, 'ival': None, 'md5': False, 'op': 1},
-        {'index': 3, 'ival': 'c', 'md5': False, 'op': 2},
-        {'index': 4, 'ival': 'd', 'md5': False, 'op': 3},
-        {'index': 6, 'ival': 'f', 'md5': False, 'op': 2},
-        {'index': 7, 'ival': None, 'md5': False, 'op': 1},
-        ], ct.current)
+    self.assertEqual(ct.baseline, [])
+    self.assertEqual(ct.current, [
+      {'index': 2, 'ival': None, 'md5': False, 'op': 1},
+      {'index': 3, 'ival': 'c', 'md5': False, 'op': 2},
+      {'index': 4, 'ival': 'd', 'md5': False, 'op': 3},
+      {'index': 6, 'ival': 'f', 'md5': False, 'op': 2},
+      {'index': 7, 'ival': None, 'md5': False, 'op': 1},
+      ])
     chk = '2:a,1:mc,1:dd,2:mf,1:a'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
     # index: 0123456789
     # from:   abXCeFY
     # to:    ZabSCe Y
     ct.pushChangeSpec()
-    self.assertEqual([
-        {'index': 2, 'ival': None, 'md5': False, 'op': 1},
-        {'index': 3, 'ival': 'c', 'md5': False, 'op': 2},
-        {'index': 4, 'ival': 'd', 'md5': False, 'op': 3},
-        {'index': 6, 'ival': 'f', 'md5': False, 'op': 2},
-        {'index': 7, 'ival': None, 'md5': False, 'op': 1},
-        ], ct.baseline)
+    self.assertEqual(ct.baseline, [
+      {'index': 2, 'ival': None, 'md5': False, 'op': 1},
+      {'index': 3, 'ival': 'c', 'md5': False, 'op': 2},
+      {'index': 4, 'ival': 'd', 'md5': False, 'op': 3},
+      {'index': 6, 'ival': 'f', 'md5': False, 'op': 2},
+      {'index': 7, 'ival': None, 'md5': False, 'op': 1},
+      ])
     ct.append(0, constants.ITEM_ADDED)
     ct.append(3, constants.ITEM_MODIFIED, 'X')
     ct.append(6, constants.ITEM_DELETED, 'F')
-    self.assertEqual([
-        {'index': 0, 'ival': None, 'md5': False, 'op': 1},
-        {'index': 3, 'ival': 'X', 'md5': False, 'op': 2},
-        {'index': 6, 'ival': 'F', 'md5': False, 'op': 3},
-        ], ct.current)
+    self.assertEqual(ct.current, [
+      {'index': 0, 'ival': None, 'md5': False, 'op': 1},
+      {'index': 3, 'ival': 'X', 'md5': False, 'op': 2},
+      {'index': 6, 'ival': 'F', 'md5': False, 'op': 3},
+      ])
     chk = '0:a,3:a,1:mc,1:dd,2:df,1:a'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
     # index: 0123456789
     # from:  ZabSCe Y
     # to:    Z  SCeTUV
     ct.pushChangeSpec()
-    self.assertEqual([
-        {'index': 0, 'ival': None, 'md5': False, 'op': 1},
-        {'index': 3, 'ival': None, 'md5': False, 'op': 1},
-        {'index': 4, 'ival': 'c', 'md5': False, 'op': 2},
-        {'index': 5, 'ival': 'd', 'md5': False, 'op': 3},
-        {'index': 7, 'ival': 'f', 'md5': False, 'op': 3},
-        {'index': 8, 'ival': None, 'md5': False, 'op': 1},
-        ], ct.baseline)
+    self.assertEqual(ct.baseline, [
+      {'index': 0, 'ival': None, 'md5': False, 'op': 1},
+      {'index': 3, 'ival': None, 'md5': False, 'op': 1},
+      {'index': 4, 'ival': 'c', 'md5': False, 'op': 2},
+      {'index': 5, 'ival': 'd', 'md5': False, 'op': 3},
+      {'index': 7, 'ival': 'f', 'md5': False, 'op': 3},
+      {'index': 8, 'ival': None, 'md5': False, 'op': 1},
+      ])
     ct.append(1, constants.ITEM_DELETED, 'a')
     ct.append(2, constants.ITEM_DELETED, 'b')
     ct.append(6, constants.ITEM_ADDED)
     ct.append(7, constants.ITEM_MODIFIED, 'Y')
     ct.append(8, constants.ITEM_ADDED)
-    self.assertEqual([
-        {'index': 1, 'ival': 'a', 'md5': False, 'op': 3},
-        {'index': 2, 'ival': 'b', 'md5': False, 'op': 3},
-        {'index': 6, 'ival': None, 'md5': False, 'op': 1},
-        {'index': 7, 'ival': 'Y', 'md5': False, 'op': 2},
-        {'index': 8, 'ival': None, 'md5': False, 'op': 1},
-        ], ct.current)
+    self.assertEqual(ct.current, [
+      {'index': 1, 'ival': 'a', 'md5': False, 'op': 3},
+      {'index': 2, 'ival': 'b', 'md5': False, 'op': 3},
+      {'index': 6, 'ival': None, 'md5': False, 'op': 1},
+      {'index': 7, 'ival': 'Y', 'md5': False, 'op': 2},
+      {'index': 8, 'ival': None, 'md5': False, 'op': 1},
+      ])
     chk = '0:a,1:da,1:db,1:a,1:mc,1:dd,2:df,1:a,1:a,1:a'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_changespec_gen_multi_byspecpush(self):
     ct = ListChangeTracker('2:a,1:mc,1:dd,2:mf,1:a')
     ct.pushChangeSpec('0:a,3:mX,3:dF')
     chk = '0:a,3:a,1:mc,1:dd,2:df,1:a'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
     ct.pushChangeSpec('1:da,1:db,4:a,1:mY,1:a')
     chk = '0:a,1:da,1:db,1:a,1:mc,1:dd,2:df,1:a,1:a,1:a'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_changespec_gen_multi_byspecone(self):
@@ -273,7 +279,7 @@ class TestListChangeTracker(unittest.TestCase):
       ';0:a,3:mX,3:dF'
       ';1:da,1:db,4:a,3:mY,1:a')
     chk = '0:a,1:da,1:db,1:a,1:mc,1:dd,2:df,1:a,1:a,2:mY,1:a'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_changespec_cancelOut(self):
@@ -285,20 +291,22 @@ class TestListChangeTracker(unittest.TestCase):
       '2:a,3:a'
       ';0:da,5:dY,2:mf')
     chk = '0:da,2:a,4:mf'
-    self.assertEqual(chk, str(ct))
+    self.assertEqual(str(ct), chk)
 
   #----------------------------------------------------------------------------
   def test_conflict_simple_mod(self):
     # index: 0123456789
     # orig:  abcdef
     ct = ListChangeTracker('2:mc')
-    self.assertEqual((0, None), ct.isChange(0, constants.ITEM_MODIFIED, 'A'))
-    self.assertEqual((1, None), ct.isChange(1, constants.ITEM_MODIFIED, 'B'))
-    self.assertEqual((None, None), ct.isChange(2, constants.ITEM_MODIFIED, 'c'))
-    self.assertRaises(ConflictError, ct.isChange, 2, constants.ITEM_MODIFIED, 'C')
-    self.assertEqual((4, None), ct.isChange(4, constants.ITEM_MODIFIED, 'E'))
-    self.assertEqual((4, (4, 1)), ct.isChange(4, constants.ITEM_ADDED, 'E'))
-    self.assertRaises(ConflictError, ct.isChange, 2, constants.ITEM_DELETED)
+    self.assertEqual(ct.isChange(0, constants.ITEM_MODIFIED, 'A'), (0, None))
+    self.assertEqual(ct.isChange(1, constants.ITEM_MODIFIED, 'B'), (1, None))
+    self.assertEqual(ct.isChange(2, constants.ITEM_MODIFIED, 'c'), (None, None))
+    with self.assertRaises(ConflictError) as cm:
+      ct.isChange(2, constants.ITEM_MODIFIED, 'C')
+    self.assertEqual(ct.isChange(4, constants.ITEM_MODIFIED, 'E'), (4, None))
+    self.assertEqual(ct.isChange(4, constants.ITEM_ADDED, 'E'), (4, (4, 1)))
+    with self.assertRaises(ConflictError) as cm:
+      ct.isChange(2, constants.ITEM_DELETED)
 
   #----------------------------------------------------------------------------
   def test_conflict_simple_del(self):
@@ -307,12 +315,12 @@ class TestListChangeTracker(unittest.TestCase):
     # cur:   ab def
     # idx:   abdef
     ct = ListChangeTracker('2:dc')
-    self.assertEqual((0, None), ct.isChange(0, constants.ITEM_MODIFIED, 'A'))
-    self.assertEqual((1, None), ct.isChange(1, constants.ITEM_MODIFIED, 'B'))
-    self.assertEqual((None, (2, 1)), ct.isChange(2, constants.ITEM_ADDED, 'c'))
-    self.assertEqual((2, (2, 1)), ct.isChange(2, constants.ITEM_ADDED, 'C'))
-    self.assertEqual((2, None), ct.isChange(2, constants.ITEM_MODIFIED, 'D'))
-    self.assertEqual((3, None), ct.isChange(3, constants.ITEM_MODIFIED, 'E'))
+    self.assertEqual(ct.isChange(0, constants.ITEM_MODIFIED, 'A'), (0, None))
+    self.assertEqual(ct.isChange(1, constants.ITEM_MODIFIED, 'B'), (1, None))
+    self.assertEqual(ct.isChange(2, constants.ITEM_ADDED, 'c'), (None, (2, 1)))
+    self.assertEqual(ct.isChange(2, constants.ITEM_ADDED, 'C'), (2, (2, 1)))
+    self.assertEqual(ct.isChange(2, constants.ITEM_MODIFIED, 'D'), (2, None))
+    self.assertEqual(ct.isChange(3, constants.ITEM_MODIFIED, 'E'), (3, None))
 
   #----------------------------------------------------------------------------
   def test_multi_del(self):
@@ -328,11 +336,11 @@ class TestListChangeTracker(unittest.TestCase):
     #   5 mod: h => H
 
     ct = ListChangeTracker('2:dc,3:df')
-    self.assertEqual((None, (2, 1)), ct.isChange(2, constants.ITEM_ADDED, 'c'))
-    self.assertEqual((2, (2, 1)), ct.isChange(2, constants.ITEM_ADDED, 'C'))
-    self.assertEqual((None, (4, 1)), ct.isChange(4, constants.ITEM_ADDED, 'f'))
+    self.assertEqual(ct.isChange(2, constants.ITEM_ADDED, 'c'), (None, (2, 1)))
+    self.assertEqual(ct.isChange(2, constants.ITEM_ADDED, 'C'), ((2, (2, 1))))
+    self.assertEqual(ct.isChange(4, constants.ITEM_ADDED, 'f'), (None, (4, 1)))
     # note the caller is responsible for remembering to add 2 to the index...
-    self.assertEqual((5, None), ct.isChange(5, constants.ITEM_MODIFIED, 'H'))
+    self.assertEqual(ct.isChange(5, constants.ITEM_MODIFIED, 'H'), (5, None))
 
   #----------------------------------------------------------------------------
   def test_merge_del_adjacent_add(self):
@@ -349,21 +357,20 @@ class TestListChangeTracker(unittest.TestCase):
 
     ct = ListChangeTracker('1:db,4:df')
     self.assertEqual(
-      (None, (1, 1)),
-      ct.isChange(1, constants.ITEM_ADDED, 'b', token=None))
+      ct.isChange(1, constants.ITEM_ADDED, 'b', token=None),
+      (None, (1, 1)))
     self.assertEqual(
-      (1, (1, 1)),
-      ct.isChange(1, constants.ITEM_ADDED, 'B', token=(1, 1)))
+      ct.isChange(1, constants.ITEM_ADDED, 'B', token=(1, 1)),
+      (1, (1, 1)))
     self.assertEqual(
-      (None, (4, 1)),
-      ct.isChange(4, constants.ITEM_ADDED, 'f', token=None))
+      ct.isChange(4, constants.ITEM_ADDED, 'f', token=None),
+      (None, (4, 1)))
     self.assertEqual(
-      (4, (4, 1)),
-      ct.isChange(4, constants.ITEM_ADDED, 'F', token=(4, 1)))
+      ct.isChange(4, constants.ITEM_ADDED, 'F', token=(4, 1)),
+      (4, (4, 1)))
     self.assertEqual(
-      (4, (4, 1)),
-      ct.isChange(4, constants.ITEM_ADDED, 'X', token=(4, 1)))
-
+      ct.isChange(4, constants.ITEM_ADDED, 'X', token=(4, 1)),
+      (4, (4, 1)))
 
   #----------------------------------------------------------------------------
   def test_merge_multi_add(self):
@@ -387,23 +394,17 @@ class TestListChangeTracker(unittest.TestCase):
 
     ct = ListChangeTracker('1:a,4:a,5:a')
     self.assertEqual(
-      None,
-      ct.isChange(1, constants.ITEM_DELETED, None, token=None)[0])
+      ct.isChange(1, constants.ITEM_DELETED, None, token=None)[0], None)
     self.assertEqual(
-      3,
-      ct.isChange(3, constants.ITEM_ADDED, 'B', token=None)[0])
+      ct.isChange(3, constants.ITEM_ADDED, 'B', token=None)[0], 3)
     self.assertEqual(
-      None,
-      ct.isChange(5, constants.ITEM_DELETED, None, token=None)[0])
+      ct.isChange(5, constants.ITEM_DELETED, None, token=None)[0], None)
     self.assertEqual(
-      8,
-      ct.isChange(8, constants.ITEM_ADDED, 'F', token=None)[0])
+      ct.isChange(8, constants.ITEM_ADDED, 'F', token=None)[0], 8)
     self.assertEqual(
-      None,
-      ct.isChange(10, constants.ITEM_DELETED, None, token=None)[0])
+      ct.isChange(10, constants.ITEM_DELETED, None, token=None)[0], None)
     self.assertEqual(
-      12,
-      ct.isChange(12, constants.ITEM_ADDED, 'I', token=None)[0])
+      ct.isChange(12, constants.ITEM_ADDED, 'I', token=None)[0], 12)
 
   #----------------------------------------------------------------------------
   def test_merge_multi_del(self):
@@ -429,23 +430,17 @@ class TestListChangeTracker(unittest.TestCase):
 
     ct = ListChangeTracker('1:db,5:dg,7:dn')
     self.assertEqual(
-      None,
-      ct.isChange(1, constants.ITEM_ADDED, 'b', token=None)[0])
+      ct.isChange(1, constants.ITEM_ADDED, 'b', token=None)[0], None)
     self.assertEqual(
-      2,
-      ct.isChange(2, constants.ITEM_DELETED, None, token=None)[0])
+      ct.isChange(2, constants.ITEM_DELETED, None, token=None)[0], 2)
     self.assertEqual(
-      None,
-      ct.isChange(5, constants.ITEM_ADDED, 'g', token=None)[0])
+      ct.isChange(5, constants.ITEM_ADDED, 'g', token=None)[0], None)
     self.assertEqual(
-      7,
-      ct.isChange(7, constants.ITEM_DELETED, None, token=None)[0])
+      ct.isChange(7, constants.ITEM_DELETED, None, token=None)[0], 7)
     self.assertEqual(
-      None,
-      ct.isChange(11, constants.ITEM_ADDED, 'n', token=None)[0])
+      ct.isChange(11, constants.ITEM_ADDED, 'n', token=None)[0], None)
     self.assertEqual(
-      14,
-      ct.isChange(14, constants.ITEM_DELETED, None, token=None)[0])
+      ct.isChange(14, constants.ITEM_DELETED, None, token=None)[0], 14)
 
   #----------------------------------------------------------------------------
   def test_merge_consecutive_add(self):
@@ -475,29 +470,29 @@ class TestListChangeTracker(unittest.TestCase):
 
     ct = ListChangeTracker('2:a,1:a,5:a,1:a')
     self.assertEqual(
-      (None, None),
-      ct.isChange(2, constants.ITEM_DELETED, None, token=None))
+      ct.isChange(2, constants.ITEM_DELETED, None, token=None),
+      (None, None))
     self.assertEqual(
-      (None, None),
-      ct.isChange(3, constants.ITEM_DELETED, None, token=None))
+      ct.isChange(3, constants.ITEM_DELETED, None, token=None),
+      (None, None))
     self.assertEqual(
-      (6, (6, 1)),
-      ct.isChange(6, constants.ITEM_ADDED, 'C', token=None))
+      ct.isChange(6, constants.ITEM_ADDED, 'C', token=None),
+      (6, (6, 1)))
     self.assertEqual(
-      (6, (6, 2)),
-      ct.isChange(6, constants.ITEM_ADDED, 'D', token=(6, 1)))
+      ct.isChange(6, constants.ITEM_ADDED, 'D', token=(6, 1)),
+      (6, (6, 2)))
     self.assertEqual(
-      (None, None),
-      ct.isChange(8, constants.ITEM_DELETED, None, token=(6, 2)))
+      ct.isChange(8, constants.ITEM_DELETED, None, token=(6, 2)),
+      (None, None))
     self.assertEqual(
-      (None, None),
-      ct.isChange(9, constants.ITEM_DELETED, None, token=None))
+      ct.isChange(9, constants.ITEM_DELETED, None, token=None),
+      (None, None))
     self.assertEqual(
-      (12, (12, 1)),
-      ct.isChange(12, constants.ITEM_ADDED, 'G', token=None))
+      ct.isChange(12, constants.ITEM_ADDED, 'G', token=None),
+      (12, (12, 1)))
     self.assertEqual(
-      (12, (12, 2)),
-      ct.isChange(12, constants.ITEM_ADDED, 'H', token=(12, 1)))
+      ct.isChange(12, constants.ITEM_ADDED, 'H', token=(12, 1)),
+      (12, (12, 2)))
 
   #----------------------------------------------------------------------------
   def test_merge_consecutive_del(self):
@@ -524,29 +519,29 @@ class TestListChangeTracker(unittest.TestCase):
 
     ct = ListChangeTracker('2:dc,1:dd,5:di,1:dj')
     self.assertEqual(
-      (None, (2, 1)),
-      ct.isChange(2, constants.ITEM_ADDED, 'c', token=None))
+      ct.isChange(2, constants.ITEM_ADDED, 'c', token=None),
+      (None, (2, 1)))
     self.assertEqual(
-      (None, (2, 2)),
-      ct.isChange(2, constants.ITEM_ADDED, 'd', token=(2, 1)))
+      ct.isChange(2, constants.ITEM_ADDED, 'd', token=(2, 1)),
+      (None, (2, 2)))
     self.assertEqual(
-      (3, None),
-      ct.isChange(3, constants.ITEM_DELETED, None, token=(2, 2)))
+      ct.isChange(3, constants.ITEM_DELETED, None, token=(2, 2)),
+      (3, None))
     self.assertEqual(
-      (4, None),
-      ct.isChange(4, constants.ITEM_DELETED, None, token=None))
+      ct.isChange(4, constants.ITEM_DELETED, None, token=None),
+      (4, None))
     self.assertEqual(
-      (None, (6, 1)),
-      ct.isChange(6, constants.ITEM_ADDED, 'i', token=None))
+      ct.isChange(6, constants.ITEM_ADDED, 'i', token=None),
+      (None, (6, 1)))
     self.assertEqual(
-      (None, (6, 2)),
-      ct.isChange(6, constants.ITEM_ADDED, 'j', token=(6, 1)))
+      ct.isChange(6, constants.ITEM_ADDED, 'j', token=(6, 1)),
+      (None, (6, 2)))
     self.assertEqual(
-      (8, None),
-      ct.isChange(8, constants.ITEM_DELETED, 'G', token=(8, 2)))
+      ct.isChange(8, constants.ITEM_DELETED, 'G', token=(8, 2)),
+      (8, None))
     self.assertEqual(
-      (9, None),
-      ct.isChange(9, constants.ITEM_DELETED, 'H', token=None))
+      ct.isChange(9, constants.ITEM_DELETED, 'H', token=None),
+      (9, None))
 
 #------------------------------------------------------------------------------
 # end of $Id$

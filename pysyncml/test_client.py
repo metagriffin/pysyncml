@@ -107,6 +107,8 @@ class ProxyPeer(object):
 #------------------------------------------------------------------------------
 class TestClient(unittest.TestCase, pxml.XmlTestMixin):
 
+  maxDiff = None
+
   #----------------------------------------------------------------------------
   def setUp(self):
     self.initDatabases()
@@ -384,9 +386,9 @@ class TestClient(unittest.TestCase, pxml.XmlTestMixin):
                 '</SyncML>')
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
-    self.assertEqual('http://www.example.com/sync;s=9D35ACF5AEDDD26AC875EE1286F3C048', proxy.session.respUri)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
+    self.assertEqual(proxy.session.respUri, 'http://www.example.com/sync;s=9D35ACF5AEDDD26AC875EE1286F3C048')
 
     # step 3: server responds, client sends all of its data (none in this case)
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -501,8 +503,8 @@ class TestClient(unittest.TestCase, pxml.XmlTestMixin):
                 '</SyncML>')
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
 
     # step 4: server responds, client sends mapping
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -618,10 +620,10 @@ class TestClient(unittest.TestCase, pxml.XmlTestMixin):
                 '</SyncML>')
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
-    self.assertEqual([1000], self.items.entries.keys())
-    self.assertEqual('some text content', self.items.entries[1000].body)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
+    self.assertEqual(self.items.entries.keys(), [1000])
+    self.assertEqual(self.items.entries[1000].body, 'some text content')
 
     # step 5: server responds, client sends nothing
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -670,8 +672,9 @@ class TestClient(unittest.TestCase, pxml.XmlTestMixin):
     # this is only because i've interrupted the normal Adapter handling...
     self.client._dbsave()
     stats = self.client._session2stats(session)
-    self.assertEqual(dict(cli_memo=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, hereAdd=1)),
-                     stats)
+    self.assertEqual(
+      stats,
+      dict(cli_memo=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, hereAdd=1)))
 
 #------------------------------------------------------------------------------
 # end of $Id$

@@ -30,14 +30,14 @@ class TestCodec(unittest.TestCase):
   def test_encode_utf8(self):
     uni = u'\u30c6\u30b9\u30c8'
     raw = 'テスト'
-    self.assertEqual(uni, raw.decode('utf-8'))
+    self.assertEqual(raw.decode('utf-8'), uni)
     xdoc = ET.Element('root')
     xdoc.text = uni
     contentType, data = codec.Codec.factory(constants.CODEC_XML).encode(xdoc)
-    self.assertEqual('application/vnd.syncml+xml; charset=UTF-8', contentType)
+    self.assertEqual(contentType, 'application/vnd.syncml+xml; charset=UTF-8')
     # TODO: determine which output i actually want...
-    self.assertEqual('<root>&#12486;&#12473;&#12488;</root>', data)
-    #self.assertEqual('<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<root>\xe3\x83\x86\xe3\x82\xb9\xe3\x83\x88</root>', data)
+    self.assertEqual(data, '<root>&#12486;&#12473;&#12488;</root>')
+    #self.assertEqual(data, '<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<root>\xe3\x83\x86\xe3\x82\xb9\xe3\x83\x88</root>')
 
 #------------------------------------------------------------------------------
 # end of $Id$

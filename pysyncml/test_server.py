@@ -69,11 +69,13 @@ def findxml(xml, xpath):
 #------------------------------------------------------------------------------
 class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqual):
 
+  maxDiff = None
+
   #----------------------------------------------------------------------------
-  def assertIntsNear(self, chk, val, offset=1):
+  def assertIntsNear(self, val, chk, offset=1):
     if chk == val or ( chk - offset == val ) or ( chk + offset == val ):
       return
-    self.assertEqual(chk, val)
+    self.assertEqual(val, chk)
 
   #----------------------------------------------------------------------------
   def setUp(self):
@@ -417,8 +419,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                     '</SyncHdr>'
                     '<SyncBody><Final/></SyncBody>'
                     '</SyncML>')
-    self.assertEqual(None, pysyncml.Context.getAuthInfo(request, None))
-    self.assertEqual(self.server.devID, pysyncml.Context.getTargetID(request))
+    self.assertEqual(pysyncml.Context.getAuthInfo(request, None), None)
+    self.assertEqual(pysyncml.Context.getTargetID(request), self.server.devID)
 
   #----------------------------------------------------------------------------
   def test_auth_basic(self):
@@ -449,10 +451,11 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                     '</SyncHdr>'
                     '<SyncBody><Final/></SyncBody>'
                     '</SyncML>')
-    self.assertEqual(adict(auth=pysyncml.NAMESPACE_AUTH_BASIC,
-                           username='guest', password='guest'),
-                     pysyncml.Context.getAuthInfo(request, None))
-    self.assertEqual(self.server.devID, pysyncml.Context.getTargetID(request))
+    self.assertEqual(
+      pysyncml.Context.getAuthInfo(request, None),
+      adict(auth=pysyncml.NAMESPACE_AUTH_BASIC,
+            username='guest', password='guest'))
+    self.assertEqual(pysyncml.Context.getTargetID(request), self.server.devID)
 
   #----------------------------------------------------------------------------
   def test_auth_with_namespace(self):
@@ -483,10 +486,11 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                     ' </SyncHdr>'
                     ' <SyncBody><Final/></SyncBody>'
                     '</SyncML>')
-    self.assertEqual(adict(auth=pysyncml.NAMESPACE_AUTH_BASIC,
-                           username='guest', password='guest'),
-                     pysyncml.Context.getAuthInfo(request, None))
-    self.assertEqual(self.server.devID, pysyncml.Context.getTargetID(request))
+    self.assertEqual(
+      pysyncml.Context.getAuthInfo(request, None),
+      adict(auth=pysyncml.NAMESPACE_AUTH_BASIC,
+            username='guest', password='guest'))
+    self.assertEqual(pysyncml.Context.getTargetID(request), self.server.devID)
 
   #----------------------------------------------------------------------------
   def test_devinfo_dbsaveload(self):
@@ -501,7 +505,9 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     ctxt1.save()
     server2 = pysyncml.Context(engine=db, owner=None, autoCommit=True).Adapter()
     self.assertEqual(server1.devID, server2.devID)
-    self.assertEqual('<Device "%s.server": devType=server; manufacturerName=pysyncml; modelName=%s.server; oem=-; hardwareVersion=-; firmwareVersion=-; softwareVersion=-; utc=True; largeObjects=True; hierarchicalSync=True; numberOfChanges=True>' % (__name__, __name__), str(server1.devinfo))
+    self.assertEqual(
+      str(server1.devinfo),
+      '<Device "%s.server": devType=server; manufacturerName=pysyncml; modelName=%s.server; oem=-; hardwareVersion=-; firmwareVersion=-; softwareVersion=-; utc=True; largeObjects=True; hierarchicalSync=True; numberOfChanges=True>' % (__name__, __name__))
     self.assertEqual(str(server1.devinfo), str(server2.devinfo))
 
   #----------------------------------------------------------------------------
@@ -514,17 +520,18 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
       manufacturerName  = 'pysyncml',
       modelName         = __name__ + '.server',
       ))
-    self.assertEqual([], server1.stores.keys())
+    self.assertEqual(server1.stores.keys(), [])
     server1.addStore(ctxt1.Store(uri='srv_note', displayName='Server Note Store',
                                  agent=Agent(storage=self.items)))
     ctxt1._model.session.flush()
-    self.assertEqual(['srv_note'], server1.stores.keys())
-    self.assertEqual('<Store "Server Note Store": uri=srv_note; maxGuidSize=%d; maxObjSize=%d; syncTypes=1,2,3,4,5,6,7; contentTypes=text/x-s4j-sifn@1.1:PrefTxRx,text/x-s4j-sifn@1.0:TxRx,text/plain@1.1,1.0:TxRx>'
-                     % (getAddressSize(), sys.maxint),
-                     str(server1.stores['srv_note']))
+    self.assertEqual(server1.stores.keys(), ['srv_note'])
+    self.assertEqual(
+      str(server1.stores['srv_note']),
+      '<Store "Server Note Store": uri=srv_note; maxGuidSize=%d; maxObjSize=%d; syncTypes=1,2,3,4,5,6,7; contentTypes=text/x-s4j-sifn@1.1:PrefTxRx,text/x-s4j-sifn@1.0:TxRx,text/plain@1.1,1.0:TxRx>'
+      % (getAddressSize(), sys.maxint))
     ctxt1.save()
     server2 = pysyncml.Context(engine=db, owner=None, autoCommit=True).Adapter()
-    self.assertEqual(['srv_note'], server2.stores.keys())
+    self.assertEqual(server2.stores.keys(), ['srv_note'])
     self.assertEqual(str(server1.stores), str(server2.stores))
 
   #----------------------------------------------------------------------------
@@ -563,7 +570,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     response = pysyncml.Response()
     auth     = pysyncml.Context.getAuthInfo(request, None)
     stats = self.server.handleRequest(session, request, response)
-    self.assertEqual(dict(), stats)
+    self.assertEqual(stats, dict())
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -653,8 +660,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
 
   #----------------------------------------------------------------------------
   def test_effective_id(self):
@@ -668,7 +675,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session.returnUrl = returnUrl
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertEqual(dict(), stats)
+    self.assertEqual(stats, dict())
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -758,8 +765,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
 
   #----------------------------------------------------------------------------
   def test_new_peer_store(self):
@@ -772,10 +779,10 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session.returnUrl = returnUrl
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     anchor = findxml(response.body, './SyncBody/Alert/Item/Meta/Anchor/Next')
     self.assertTrue(anchor is not None)
-    self.assertIntsNear(ts(), int(anchor))
+    self.assertIntsNear(int(anchor), ts())
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -904,30 +911,30 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
     # TODO: confirm that the session object looks good...
     server2 = pysyncml.Context(engine=self.db, owner=None, autoCommit=True).Adapter()
     peers = server2.getKnownPeers()
-    self.assertEqual(1, len(peers))
+    self.assertEqual(len(peers), 1)
     peer = peers[0]
-    self.assertEqual('test', peer.name)
-    self.assertEqual(newPeerID, peer.devID)
-    self.assertEqual(150000, peer.maxMsgSize)
-    self.assertEqual(4000000, peer.maxObjSize)
+    self.assertEqual(peer.name, 'test')
+    self.assertEqual(peer.devID, newPeerID)
+    self.assertEqual(peer.maxMsgSize, 150000)
+    self.assertEqual(peer.maxObjSize, 4000000)
     self.assertTrue(peer.devinfo is not None)
-    self.assertEqual(newPeerID, peer.devinfo.devID)
-    self.assertEqual('pysyncml', peer.devinfo.manufacturerName)
-    self.assertEqual(__name__ + '.client', peer.devinfo.modelName)
-    self.assertEqual('-', peer.devinfo.oem)
-    self.assertEqual('-', peer.devinfo.firmwareVersion)
-    self.assertEqual('-', peer.devinfo.softwareVersion)
-    self.assertEqual('-', peer.devinfo.hardwareVersion)
-    self.assertEqual('workstation', peer.devinfo.devType)
-    self.assertEqual(True, peer.devinfo.utc)
-    self.assertEqual(True, peer.devinfo.largeObjects)
-    self.assertEqual(False, peer.devinfo.hierarchicalSync)
-    self.assertEqual(True, peer.devinfo.numberOfChanges)
+    self.assertEqual(peer.devinfo.devID, newPeerID)
+    self.assertEqual(peer.devinfo.manufacturerName, 'pysyncml')
+    self.assertEqual(peer.devinfo.modelName, __name__ + '.client')
+    self.assertEqual(peer.devinfo.oem, '-')
+    self.assertEqual(peer.devinfo.firmwareVersion, '-')
+    self.assertEqual(peer.devinfo.softwareVersion, '-')
+    self.assertEqual(peer.devinfo.hardwareVersion, '-')
+    self.assertEqual(peer.devinfo.devType, 'workstation')
+    self.assertEqual(peer.devinfo.utc, True)
+    self.assertEqual(peer.devinfo.largeObjects, True)
+    self.assertEqual(peer.devinfo.hierarchicalSync, False)
+    self.assertEqual(peer.devinfo.numberOfChanges, True)
 
   #----------------------------------------------------------------------------
   def test_sync_push_empty(self):
@@ -939,7 +946,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 2: don't register any changes...
     # step 3: initialize syncml transaction with a new session
     self.initServer()
@@ -949,7 +956,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 4: synchronize - send empty and expect empty
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -957,7 +964,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                                peerNextAnchor=peerAnchor, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -1003,8 +1010,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
 
   #----------------------------------------------------------------------------
   def test_sync_push_one(self):
@@ -1016,7 +1023,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 2: register some changes
     self.initServer()
     item = self.items.add(NoteItem(name='foo', body='this is the foo'))
@@ -1030,7 +1037,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 4: synchronize - send nothing and expect changes down
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1038,7 +1045,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                                peerNextAnchor=peerAnchor, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -1092,8 +1099,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
 
   #----------------------------------------------------------------------------
   def test_sync_map(self):
@@ -1105,7 +1112,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 2: register some changes
     self.initServer()
     item = self.items.add(NoteItem(name='foo', body='this is the foo'))
@@ -1119,7 +1126,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 4: synchronize - send nothing and expect changes down
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1127,14 +1134,14 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                                peerNextAnchor=peerAnchor, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 5: send mapping request, expect a confirm and nothing further
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
                     body=self.makeRequestMap(self.server.devID, newPeerID, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, peerAdd=1)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, peerAdd=1)))
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -1174,8 +1181,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
 
   #----------------------------------------------------------------------------
   def test_two_peers(self):
@@ -1188,7 +1195,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     self.initServer()
     # step 2: register another new peer
     newPeerID = 'NEW-PEER-1'
@@ -1198,7 +1205,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 3: register some changes
     self.initServer()
     item = self.items.add(NoteItem(name='foo', body='this is the foo'))
@@ -1206,8 +1213,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     self.context.save()
     # ensure that changes are registered for both...
     self.initServer()
-    self.assertEqual(2, len(self.server.getKnownPeers()))
-    self.assertEqual(2, self.context._model.Change.q().count())
+    self.assertEqual(len(self.server.getKnownPeers()), 2)
+    self.assertEqual(self.context._model.Change.q().count(), 2)
     # step 4: synchronize one of the peers
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1216,7 +1223,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 4a: synchronize - send nothing and expect changes down
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1224,26 +1231,26 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                                peerNextAnchor=peerAnchor, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 4b: send mapping request, expect a confirm and nothing further
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
                     body=self.makeRequestMap(self.server.devID, newPeerID, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, peerAdd=1)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, peerAdd=1)))
     # ensure that changes remain only for one of them...
     self.initServer()
     peers = self.server.getKnownPeers()
-    self.assertEqual(2, len(peers))
-    self.assertEqual(1, self.context._model.Change.q().count())
+    self.assertEqual(len(peers), 2)
+    self.assertEqual(self.context._model.Change.q().count(), 1)
     change = self.context._model.Change.q().one()
     peer0 = [e for e in peers if e.devID == newPeerID0][0]
-    self.assertEqual(1, len(peer0.stores.values()))
+    self.assertEqual(len(peer0.stores.values()), 1)
     store0 = peer0.stores.values()[0]
-    self.assertEqual(store0.id, change.store_id)
-    self.assertEqual(pysyncml.ITEM_ADDED, change.state)
-    self.assertEqual('1000', change.itemID)
+    self.assertEqual(change.store_id, store0.id)
+    self.assertEqual(change.state, pysyncml.ITEM_ADDED)
+    self.assertEqual(change.itemID, '1000')
 
   #----------------------------------------------------------------------------
   def test_sync_update(self):
@@ -1257,10 +1264,10 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     srvrAnchor = findxml(response.body, './SyncBody/Alert/Item/Meta/Anchor/Next')
     self.assertTrue(srvrAnchor is not None)
-    self.assertIntsNear(ts(), int(srvrAnchor))
+    self.assertIntsNear(int(srvrAnchor), ts())
     # step 3: synchronize - send nothing and expect changes down
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1268,14 +1275,14 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                                peerNextAnchor=peerAnchor, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 4: send mapping request, expect a confirm and nothing further
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
                     body=self.makeRequestMap(self.server.devID, newPeerID, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, peerAdd=1)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, peerAdd=1)))
     # step 5: make some changes and register them
     self.initServer()
     self.items.replace(NoteItem(id=item.id, name='foo', body='and now it is the bar'), False)
@@ -1297,10 +1304,10 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session.returnUrl = returnUrl
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY)))
     srvrAnchor2 = findxml(response.body, './SyncBody/Alert/Item/Meta/Anchor/Next')
     self.assertTrue(srvrAnchor2 is not None)
-    self.assertIntsNear(ts(), int(srvrAnchor2))
+    self.assertIntsNear(int(srvrAnchor2), ts())
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -1368,8 +1375,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
     # step 7: synchronize - send nothing and expect changes down (update to item)
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1379,7 +1386,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                                ))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY)))
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -1434,8 +1441,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
     # step 8: send final status and nothing further
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1443,7 +1450,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                              isAdd=False, ))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, peerMod=1)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, peerMod=1)))
 
   #----------------------------------------------------------------------------
   def test_sync_update_with_repeat_devinfo_put(self):
@@ -1459,10 +1466,10 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     srvrAnchor = findxml(response.body, './SyncBody/Alert/Item/Meta/Anchor/Next')
     self.assertTrue(srvrAnchor is not None)
-    self.assertIntsNear(ts(), int(srvrAnchor))
+    self.assertIntsNear(int(srvrAnchor), ts())
     # step 3: synchronize - send nothing and expect changes down
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1470,14 +1477,14 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                                peerNextAnchor=peerAnchor, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     # step 4: send mapping request, expect a confirm and nothing further
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
                     body=self.makeRequestMap(self.server.devID, newPeerID, sessionID='2'))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, peerAdd=1)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC, peerAdd=1)))
     # step 5: make some changes and register them
     self.initServer()
     self.items.replace(NoteItem(id=item.id, name='foo', body='and now it is the bar'), False)
@@ -1501,10 +1508,10 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session.returnUrl = returnUrl
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY)))
     srvrAnchor2 = findxml(response.body, './SyncBody/Alert/Item/Meta/Anchor/Next')
     self.assertTrue(srvrAnchor2 is not None)
-    self.assertIntsNear(ts(), int(srvrAnchor2))
+    self.assertIntsNear(int(srvrAnchor2), ts())
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -1637,8 +1644,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
     # step 7: synchronize - send nothing and expect changes down (update to item)
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1648,7 +1655,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                                ))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY)))
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
                 '<SyncML>'
@@ -1703,8 +1710,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
     # step 8: send final status and nothing further
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1712,7 +1719,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                                              isAdd=False, ))
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, peerMod=1)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, peerMod=1)))
 
   #----------------------------------------------------------------------------
   def test_force_slowsync(self):
@@ -1724,7 +1731,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     session  = pysyncml.Session()
     response = pysyncml.Response()
     stats = self.server.handleRequest(session, request, response)
-    self.assertTrimDictEqual(dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)), stats)
+    self.assertTrimDictEqual(stats, dict(srv_note=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC)))
     srvrAnchor = findxml(response.body, './SyncBody/Alert/Item/Meta/Anchor/Next')
     chk = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
                 body=
@@ -1853,8 +1860,8 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
                 '  <Final/>'
                 ' </SyncBody>'
                 '</SyncML>')
-    self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertXmlEqual(chk.body, response.body)
+    self.assertEqual(response.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(response.body, chk.body)
 
 #------------------------------------------------------------------------------
 # end of $Id$

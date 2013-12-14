@@ -32,43 +32,43 @@ class TestFolder(unittest.TestCase):
   def test_dump_simple(self):
     fi = FolderItem(name='foldername')
     self.assertEqual(
+      fi.dumps(),
       ('application/vnd.omads-folder+xml', '1.2',
-       '<Folder><name>foldername</name></Folder>'),
-      fi.dumps())
+       '<Folder><name>foldername</name></Folder>'))
 
   #----------------------------------------------------------------------------
   def test_load_simple(self):
     fi  = FolderItem.loads('<Folder><name>foldername</name></Folder>')
     chk = FolderItem(name='foldername')
-    self.assertEqual(chk, fi)
+    self.assertEqual(fi, chk)
 
   #----------------------------------------------------------------------------
   def test_dump_attributes(self):
     fi = FolderItem(name='n', hidden=True, system=False)
     self.assertEqual(
+      fi.dumps(),
       ('application/vnd.omads-folder+xml', '1.2',
-       '<Folder><name>n</name><attributes><h>true</h><s>false</s></attributes></Folder>'),
-      fi.dumps())
+       '<Folder><name>n</name><attributes><h>true</h><s>false</s></attributes></Folder>'))
 
   #----------------------------------------------------------------------------
   def test_load_attributes(self):
     fi  = FolderItem.loads('<Folder><name>n</name><attributes><h>true</h><s>false</s></attributes></Folder>')
     chk = FolderItem(name='n', hidden=True, system=False)
-    self.assertEqual(chk, fi)
+    self.assertEqual(fi, chk)
 
   #----------------------------------------------------------------------------
   def test_dump_dates(self):
     fi = FolderItem(name='n', created=1234567890)
     self.assertEqual(
+      fi.dumps(),
       ('application/vnd.omads-folder+xml', '1.2',
-       '<Folder><name>n</name><created>20090213T233130Z</created></Folder>'),
-      fi.dumps())
+       '<Folder><name>n</name><created>20090213T233130Z</created></Folder>'))
 
   #----------------------------------------------------------------------------
   def test_load_dates(self):
     fi  = FolderItem.loads('<Folder><name>n</name><created>20090213T233130Z</created></Folder>')
     chk = FolderItem(name='n', created=1234567890)
-    self.assertEqual(chk, fi)
+    self.assertEqual(fi, chk)
 
 #------------------------------------------------------------------------------
 # end of $Id$

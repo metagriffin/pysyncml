@@ -34,14 +34,14 @@ class TestCtype(unittest.TestCase):
     ct = ctype.ContentTypeInfo('text/plain', '1.0', preferred=True)
     out = ET.tostring(ct.toSyncML('CT'))
     chk = '<CT><CTType>text/plain</CTType><VerCT>1.0</VerCT></CT>'
-    self.assertEqual(chk, out)
+    self.assertEqual(out, chk)
 
   #----------------------------------------------------------------------------
   def test_multiVers_multiVerCT(self):
     ct = ctype.ContentTypeInfo('text/plain', ['1.0', '1.1'], preferred=True)
     out = ET.tostring(ct.toSyncML())
     chk = '<ContentType><CTType>text/plain</CTType><VerCT>1.0</VerCT><VerCT>1.1</VerCT></ContentType>'
-    self.assertEqual(chk, out)
+    self.assertEqual(out, chk)
 
   #----------------------------------------------------------------------------
   def test_multiVers_uniqueVerCT(self):
@@ -51,7 +51,7 @@ class TestCtype(unittest.TestCase):
       xnode.append(n)
     out = ET.tostring(xnode)
     chk = '<C><CT><CTType>text/plain</CTType><VerCT>1.0</VerCT></CT><CT><CTType>text/plain</CTType><VerCT>1.1</VerCT></CT></C>'
-    self.assertEqual(chk, out)
+    self.assertEqual(out, chk)
 
 #------------------------------------------------------------------------------
 # end of $Id$

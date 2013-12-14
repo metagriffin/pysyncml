@@ -32,40 +32,40 @@ class TestNote(unittest.TestCase):
   #----------------------------------------------------------------------------
   def test_plain_load(self):
     note = NoteItem.loads('content', contentType=constants.TYPE_TEXT_PLAIN)
-    self.assertEqual('content', note.name)
-    self.assertEqual('content', note.body)
+    self.assertEqual(note.name, 'content')
+    self.assertEqual(note.body, 'content')
 
   #----------------------------------------------------------------------------
   def test_plain_dump(self):
     note = NoteItem(name='this note name', body='content')
     out = note.dumps(contentType=constants.TYPE_TEXT_PLAIN)
-    self.assertEqual('content', out)
+    self.assertEqual(out, 'content')
 
   #----------------------------------------------------------------------------
   def test_sifn_load(self):
     note = NoteItem.loads('<note><SIFVersion>1.1</SIFVersion><Subject>this note name</Subject><Body>content</Body></note>', contentType=constants.TYPE_SIF_NOTE)
-    self.assertEqual('this note name', note.name)
-    self.assertEqual('content', note.body)
+    self.assertEqual(note.name, 'this note name')
+    self.assertEqual(note.body, 'content')
 
   #----------------------------------------------------------------------------
   def test_sifn_dump(self):
     note = NoteItem(name='this note name', body='content')
     out = note.dumps(contentType=constants.TYPE_SIF_NOTE, version='1.1')
-    self.assertEqual('<note><SIFVersion>1.1</SIFVersion><Subject>this note name</Subject><Body>content</Body></note>', out)
+    self.assertEqual(out, '<note><SIFVersion>1.1</SIFVersion><Subject>this note name</Subject><Body>content</Body></note>')
 
   #----------------------------------------------------------------------------
   def test_sifn_ext_load(self):
     note = NoteItem.loads('<note><SIFVersion>1.1</SIFVersion><Subject>this note name</Subject><Body>content</Body><filename>this-note-name.txt</filename></note>', contentType=constants.TYPE_SIF_NOTE)
-    self.assertEqual('this note name', note.name)
-    self.assertEqual('content', note.body)
-    self.assertEqual(dict(filename=['this-note-name.txt']), note.extensions)
+    self.assertEqual(note.name, 'this note name')
+    self.assertEqual(note.body, 'content')
+    self.assertEqual(note.extensions, dict(filename=['this-note-name.txt']))
 
   #----------------------------------------------------------------------------
   def test_sifn_ext_dump(self):
     note = NoteItem(name='this note name', body='content')
     note.addExtension('filename', 'this-note-name.txt')
     out = note.dumps(contentType=constants.TYPE_SIF_NOTE, version='1.1')
-    self.assertEqual('<note><SIFVersion>1.1</SIFVersion><Subject>this note name</Subject><Body>content</Body><filename>this-note-name.txt</filename></note>', out)
+    self.assertEqual(out, '<note><SIFVersion>1.1</SIFVersion><Subject>this note name</Subject><Body>content</Body><filename>this-note-name.txt</filename></note>')
 
   #----------------------------------------------------------------------------
   def test_bad_contentType_load(self):
@@ -75,16 +75,14 @@ PRODID:-//UnitTest//vCard 3.0//
 UID:local:12345
 END:VCARD
 '''
-    self.assertRaises(common.InvalidContentType,
-                      NoteItem.loads,
-                      vcard, contentType=constants.TYPE_VCARD_V30)
+    with self.assertRaises(common.InvalidContentType) as cm:
+      NoteItem.loads(vcard, contentType=constants.TYPE_VCARD_V30)
 
   #----------------------------------------------------------------------------
   def test_bad_contentType_dump(self):
     note = NoteItem(name='this note name', body='content')
-    self.assertRaises(common.InvalidContentType,
-                      note.dumps,
-                      contentType=constants.TYPE_VCARD_V30)
+    with self.assertRaises(common.InvalidContentType) as cm:
+      note.dumps(contentType=constants.TYPE_VCARD_V30)
 
 #------------------------------------------------------------------------------
 # end of $Id$

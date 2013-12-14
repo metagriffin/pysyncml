@@ -230,15 +230,18 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
     self.serverItems.add(FileItem(name='foo.txt', body='content0', parent=root.id))
     dir1 = self.serverItems.add(FolderItem(name='subdir', parent=root.id))
     self.serverItems.add(FileItem(name='bar.txt', body='content1', parent=dir1.id))
-    self.assertEqual(['', 'foo.txt', 'subdir', 'subdir/bar.txt'],
-                     [e.path for e in self.serverItems.entries.values()])
+    self.assertEqual(
+      [e.path for e in self.serverItems.entries.values()],
+      ['', 'foo.txt', 'subdir', 'subdir/bar.txt'])
     stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_REFRESH_FROM_SERVER)
-    self.assertEqual(['', 'foo.txt', 'subdir', 'subdir/bar.txt'],
-                     [e.path for e in self.serverItems.entries.values()])
-    self.assertEqual(['', 'foo.txt', 'subdir', 'subdir/bar.txt'],
-                     [e.path for e in self.desktopItems.entries.values()])
+    self.assertEqual(
+      [e.path for e in self.serverItems.entries.values()],
+      ['', 'foo.txt', 'subdir', 'subdir/bar.txt'])
+    self.assertEqual(
+      [e.path for e in self.desktopItems.entries.values()],
+      ['', 'foo.txt', 'subdir', 'subdir/bar.txt'])
     chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_REFRESH_FROM_SERVER, hereAdd=4))
-    self.assertTrimDictEqual(chk, stats)
+    self.assertTrimDictEqual(stats, chk)
 
   # #----------------------------------------------------------------------------
   # def test_sync_addClient(self):
@@ -246,7 +249,7 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
   #   self.serverItems.add(FileItem(name='file1', body='file1'))
   #   stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_REFRESH_FROM_SERVER)
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_REFRESH_FROM_SERVER, hereAdd=1))
-  #   self.assertTrimDictEqual(chk, stats)
+  #   self.assertTrimDictEqual(stats, chk)
   #   # step 2: make changes and register
   #   self.refreshAdapters()
   #   item2 = self.serverItems.add(FileItem(name='file2', body='file2'))
@@ -255,20 +258,20 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
   #   # TODO: look into why this "refreshAdapters()" is necessary...
   #   self.refreshAdapters()
   #   stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_ONE_WAY_FROM_SERVER)
-  #   self.assertEqual(['file1', 'file2'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['file1', 'file2'], [e.body for e in self.desktopItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['file1', 'file2'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['file1', 'file2'])
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_ONE_WAY_FROM_SERVER, hereAdd=1))
-  #   self.assertTrimDictEqual(chk, stats)
+  #   self.assertTrimDictEqual(stats, chk)
 
   # #----------------------------------------------------------------------------
   # def test_sync_modClient(self):
   #   # step 1: initial sync
   #   item = self.serverItems.add(FileItem(name='file1', body='file1'))
   #   stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_REFRESH_FROM_SERVER)
-  #   self.assertEqual(['file1'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['file1'], [e.body for e in self.desktopItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['file1'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['file1'])
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_REFRESH_FROM_SERVER, hereAdd=1))
-  #   self.assertTrimDictEqual(chk, stats)
+  #   self.assertTrimDictEqual(stats, chk)
   #   # step 2: make changes and register
   #   self.refreshAdapters()
   #   self.serverItems.replace(FileItem(name='file1.mod', body='file1.mod', id=item.id))
@@ -276,20 +279,20 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
   #   # step 3: re-sync
   #   self.refreshAdapters()
   #   stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_ONE_WAY_FROM_SERVER)
-  #   self.assertEqual(['file1.mod'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['file1.mod'], [e.body for e in self.desktopItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['file1.mod'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['file1.mod'])
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_ONE_WAY_FROM_SERVER, hereMod=1))
-  #   self.assertTrimDictEqual(chk, stats)
+  #   self.assertTrimDictEqual(stats, chk)
 
   # #----------------------------------------------------------------------------
   # def test_sync_delClient(self):
   #   # step 1: initial sync
   #   item = self.serverItems.add(FileItem(name='file1', body='file1'))
   #   stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_REFRESH_FROM_SERVER)
-  #   self.assertEqual(['file1'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['file1'], [e.body for e in self.desktopItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['file1'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['file1'])
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_REFRESH_FROM_SERVER, hereAdd=1))
-  #   self.assertTrimDictEqual(chk, stats)
+  #   self.assertTrimDictEqual(stats, chk)
   #   # step 2: make changes and register
   #   self.refreshAdapters()
   #   self.serverItems.delete(item.id)
@@ -297,20 +300,20 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
   #   # step 3: re-sync
   #   self.refreshAdapters()
   #   stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_ONE_WAY_FROM_SERVER)
-  #   self.assertEqual([], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual([], [e.body for e in self.desktopItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], [])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], [])
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_ONE_WAY_FROM_SERVER, hereDel=1))
-  #   self.assertTrimDictEqual(chk, stats)
+  #   self.assertTrimDictEqual(stats, chk)
 
   # #----------------------------------------------------------------------------
   # def test_sync_refreshServer(self):
   #   # step 1: initial sync
   #   self.desktopItems.add(FileItem(name='file1', body='file1'))
   #   stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_REFRESH_FROM_CLIENT)
-  #   self.assertEqual(['file1'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['file1'], [e.body for e in self.desktopItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['file1'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['file1'])
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_REFRESH_FROM_CLIENT, peerAdd=1))
-  #   self.assertTrimDictEqual(chk, stats)
+  #   self.assertTrimDictEqual(stats, chk)
 
   # #----------------------------------------------------------------------------
   # def test_refresh_with_matching_files(self):
@@ -318,10 +321,10 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
   #   self.desktopItems.add(FileItem(name='file1', body='file1'))
   #   self.serverItems.add(FileItem(name='file1', body='file1'))
   #   stats = self.desktop.sync(mode=pysyncml.SYNCTYPE_SLOW_SYNC)
-  #   self.assertEqual(['file1'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['file1'], [e.body for e in self.desktopItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['file1'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['file1'])
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC))
-  #   self.assertTrimDictEqual(chk, stats)
+  #   self.assertTrimDictEqual(stats, chk)
 
   # #----------------------------------------------------------------------------
   # def baseline(self):
@@ -329,37 +332,37 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
   #   dstats = self.desktop.sync()
   #   mstats = self.mobile.sync()
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC))
-  #   self.assertTrimDictEqual(chk, dstats)
+  #   self.assertTrimDictEqual(dstats, chk)
   #   chk = dict(mfile=stat(mode=pysyncml.SYNCTYPE_SLOW_SYNC))
-  #   self.assertTrimDictEqual(chk, mstats)
-  #   self.assertEqual([], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual([], [e.body for e in self.desktopItems.entries.values()])
-  #   self.assertEqual([], [e.body for e in self.mobileItems.entries.values()])
+  #   self.assertTrimDictEqual(mstats, chk)
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], [])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], [])
+  #   self.assertEqual([e.body for e in self.mobileItems.entries.values()], [])
   #   # step 2: make changes on desktop and register
   #   self.refreshAdapters()
   #   item1 = self.desktopItems.add(FileItem(name='n1', body='n1'))
   #   item2 = self.desktopItems.add(FileItem(name='n2', body='n2'))
   #   self.desktopStore.registerChange(item1.id, pysyncml.ITEM_ADDED)
   #   self.desktopStore.registerChange(item2.id, pysyncml.ITEM_ADDED)
-  #   self.assertEqual([], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.desktopItems.entries.values()])
-  #   self.assertEqual([], [e.body for e in self.mobileItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], [])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['n1', 'n2'])
+  #   self.assertEqual([e.body for e in self.mobileItems.entries.values()], [])
   #   # step 3: re-sync desktop to server (push n1 => server)
   #   self.refreshAdapters()
   #   dstats = self.desktop.sync()
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, peerAdd=2))
-  #   self.assertTrimDictEqual(chk, dstats)
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.desktopItems.entries.values()])
-  #   self.assertEqual([], [e.body for e in self.mobileItems.entries.values()])
+  #   self.assertTrimDictEqual(dstats, chk)
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['n1', 'n2'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['n1', 'n2'])
+  #   self.assertEqual([e.body for e in self.mobileItems.entries.values()], [])
   #   # step 4: re-sync mobile to server (push n1 => mobile)
   #   self.refreshAdapters()
   #   mstats = self.mobile.sync()
   #   chk = dict(mfile=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, hereAdd=2))
-  #   self.assertTrimDictEqual(chk, mstats)
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.desktopItems.entries.values()])
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.mobileItems.entries.values()])
+  #   self.assertTrimDictEqual(mstats, chk)
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['n1', 'n2'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['n1', 'n2'])
+  #   self.assertEqual([e.body for e in self.mobileItems.entries.values()], ['n1', 'n2'])
 
   # #----------------------------------------------------------------------------
   # def test_multiclient_add(self):
@@ -369,33 +372,33 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
   # def test_multiclient_replace(self):
   #   # step 1: get a file into all stores
   #   self.baseline()
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.desktopItems.entries.values()])
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.mobileItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['n1', 'n2'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['n1', 'n2'])
+  #   self.assertEqual([e.body for e in self.mobileItems.entries.values()], ['n1', 'n2'])
   #   # step 2: modify the n1 in the desktop and register
   #   self.refreshAdapters()
   #   item = self.desktopItems.entries.values()[0]
   #   item.body = 'n1-bis'
   #   self.desktopStore.registerChange(item.id, pysyncml.ITEM_MODIFIED)
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['n1-bis', 'n2'], [e.body for e in self.desktopItems.entries.values()])
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.mobileItems.entries.values()])
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['n1', 'n2'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['n1-bis', 'n2'])
+  #   self.assertEqual([e.body for e in self.mobileItems.entries.values()], ['n1', 'n2'])
   #   # step 3: re-sync desktop to server (push n1 mod => server)
   #   self.refreshAdapters()
   #   dstats = self.desktop.sync()
   #   chk = dict(dfile=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, peerMod=1))
-  #   self.assertTrimDictEqual(chk, dstats)
-  #   self.assertEqual(['n1-bis', 'n2'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['n1-bis', 'n2'], [e.body for e in self.desktopItems.entries.values()])
-  #   self.assertEqual(['n1', 'n2'], [e.body for e in self.mobileItems.entries.values()])
+  #   self.assertTrimDictEqual(dstats, chk)
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['n1-bis', 'n2'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['n1-bis', 'n2'])
+  #   self.assertEqual([e.body for e in self.mobileItems.entries.values()], ['n1', 'n2'])
   #   # step 4: re-sync mobile to server (push n1 mod => mobile)
   #   self.refreshAdapters()
   #   mstats = self.mobile.sync()
   #   chk = dict(mfile=stat(mode=pysyncml.SYNCTYPE_TWO_WAY, hereMod=1))
-  #   self.assertTrimDictEqual(chk, mstats)
-  #   self.assertEqual(['n1-bis', 'n2'], [e.body for e in self.serverItems.entries.values()])
-  #   self.assertEqual(['n1-bis', 'n2'], [e.body for e in self.desktopItems.entries.values()])
-  #   self.assertEqual(['n1-bis', 'n2'], [e.body for e in self.mobileItems.entries.values()])
+  #   self.assertTrimDictEqual(mstats, chk)
+  #   self.assertEqual([e.body for e in self.serverItems.entries.values()], ['n1-bis', 'n2'])
+  #   self.assertEqual([e.body for e in self.desktopItems.entries.values()], ['n1-bis', 'n2'])
+  #   self.assertEqual([e.body for e in self.mobileItems.entries.values()], ['n1-bis', 'n2'])
 
 #------------------------------------------------------------------------------
 # end of $Id$

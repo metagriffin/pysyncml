@@ -117,29 +117,29 @@ def stripsame(dict1, dict2):
 class TrimDictEqual:
 
   #----------------------------------------------------------------------------
-  def assertTrimDictEqual(self, chk, tgt, msg=None):
+  def assertTrimDictEqual(self, tgt, chk, msg=None):
     try:
-      self.assertEqual(chk, tgt, msg)
+      self.assertEqual(tgt, chk, msg)
       return
     except Exception:
       pass
     chkdup = deepclone(chk)
     tgtdup = deepclone(tgt)
-    stripsame(chkdup, tgtdup)
+    stripsame(tgtdup, chkdup)
     try:
-      self.assertEqual(chkdup, tgtdup, msg)
+      self.assertEqual(tgtdup, chkdup, msg)
     except Exception:
       raise
     # hm. we somehow stripped the difference... raise the old one...
-    self.assertEqual(chk, tgt, msg)
+    self.assertEqual(tgt, chk, msg)
 
 #------------------------------------------------------------------------------
 class MultiLineEqual:
 
   #----------------------------------------------------------------------------
-  def assertMultiLineEqual(self, chk, tgt, msg=None):
+  def assertMultiLineEqual(self, tgt, chk, msg=None):
     try:
-      self.assertEqual(chk, tgt, msg)
+      self.assertEqual(tgt, chk, msg)
       return
     except Exception:
       if not isinstance(chk, basestring) \
@@ -170,7 +170,7 @@ class MultiLineEqual:
       cdiff.append(line.rstrip())
     for line in cdiff:
       print line
-    self.assertEqual('expected', 'received')
+    self.assertEqual('received', 'expected')
 
 #------------------------------------------------------------------------------
 # end of $Id$
