@@ -21,11 +21,11 @@
 
 import unittest, re
 from StringIO import StringIO as sio
-from . import common, constants, test_helpers
+from . import common, constants
 from .common import adict
 
 #------------------------------------------------------------------------------
-class TestCommon(unittest.TestCase, test_helpers.MultiLineEqual):
+class TestCommon(unittest.TestCase):
 
   maxDiff = None
 

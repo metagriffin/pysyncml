@@ -22,10 +22,10 @@
 import unittest, re
 import xml.etree.ElementTree as ET
 from StringIO import StringIO as sio
-from . import ctype, constants, test_helpers
+from . import ctype, constants
 
 #------------------------------------------------------------------------------
-class TestCtype(unittest.TestCase, test_helpers.MultiLineEqual):
+class TestCtype(unittest.TestCase):
 
   maxDiff = None
 

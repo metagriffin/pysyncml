@@ -21,7 +21,7 @@
 
 import unittest, re
 from StringIO import StringIO as sio
-from .. import common, constants, test_helpers
+from .. import common, constants
 from ..common import adict, ConflictError
 from .merger import *
 
@@ -34,7 +34,7 @@ def S(string, sep=' '):
   return ''.join(string.split(sep))
 
 #------------------------------------------------------------------------------
-class TestTextMerger(unittest.TestCase, test_helpers.MultiLineEqual):
+class TestTextMerger(unittest.TestCase):
 
   maxDiff = None
 
@@ -329,7 +329,7 @@ line 7: done.
     self.assertMultiLineEqual(chk, out)
 
 #------------------------------------------------------------------------------
-class TestTextMergerFactory(unittest.TestCase, test_helpers.MultiLineEqual):
+class TestTextMergerFactory(unittest.TestCase):
 
   maxDiff = None
 
@@ -369,7 +369,7 @@ class TestTextMergerFactory(unittest.TestCase, test_helpers.MultiLineEqual):
     self.assertRaises(ConflictError, tm.mergeChanges, s('abCdef'), s('bZdeXf'))
 
 #------------------------------------------------------------------------------
-class TestCompositeMerger(unittest.TestCase, test_helpers.MultiLineEqual):
+class TestCompositeMerger(unittest.TestCase):
 
   maxDiff = None
 

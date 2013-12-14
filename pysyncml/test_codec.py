@@ -21,10 +21,10 @@
 
 import unittest, re
 import xml.etree.ElementTree as ET
-from . import codec, constants, test_helpers
+from . import codec, constants
 
 #------------------------------------------------------------------------------
-class TestCodec(unittest.TestCase, test_helpers.MultiLineEqual):
+class TestCodec(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_encode_utf8(self):

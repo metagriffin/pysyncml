@@ -21,12 +21,12 @@
 
 import unittest, re
 from StringIO import StringIO as sio
-from .. import common, constants, test_helpers
+from .. import common, constants
 from ..common import adict, ConflictError
 from .tracker import AttributeChangeTracker, ListChangeTracker
 
 #------------------------------------------------------------------------------
-class TestAttributeChangeTracker(unittest.TestCase, test_helpers.MultiLineEqual):
+class TestAttributeChangeTracker(unittest.TestCase):
 
   maxDiff = None
 
@@ -155,7 +155,7 @@ class TestAttributeChangeTracker(unittest.TestCase, test_helpers.MultiLineEqual)
     self.assertEqual('add:tel-home', ct.getChangeSpec())
 
 #------------------------------------------------------------------------------
-class TestListChangeTracker(unittest.TestCase, test_helpers.MultiLineEqual):
+class TestListChangeTracker(unittest.TestCase):
 
   maxDiff = None
 
