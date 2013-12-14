@@ -173,28 +173,5 @@ class MultiLineEqual:
     self.assertEqual('expected', 'received')
 
 #------------------------------------------------------------------------------
-def removeIgnorableWhitespace(node):
-  rem = []
-  for n in node.childNodes:
-    if n.nodeType == xml.dom.Node.ELEMENT_NODE:
-      removeIgnorableWhitespace(n)
-    if n.nodeType != xml.dom.Node.TEXT_NODE:
-      continue
-    if re.match('^\s*$', n.nodeValue):
-      rem.append(n)
-  for n in rem:
-    node.removeChild(n)
-
-#------------------------------------------------------------------------------
-def canonicalXml(data):
-  try:
-    ret = xml.dom.minidom.parseString(data)
-    removeIgnorableWhitespace(ret)
-    return ret.toxml(encoding='utf-8').encode('utf-8')
-  except Exception:
-    # most likely, the input was not valid XML...
-    return data
-
-#------------------------------------------------------------------------------
 # end of $Id$
 #------------------------------------------------------------------------------
