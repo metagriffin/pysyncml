@@ -528,7 +528,7 @@ class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqua
     self.assertEqual(
       str(server1.stores['srv_note']),
       '<Store "Server Note Store": uri=srv_note; maxGuidSize=%d; maxObjSize=%d; syncTypes=1,2,3,4,5,6,7; contentTypes=text/x-s4j-sifn@1.1:PrefTxRx,text/x-s4j-sifn@1.0:TxRx,text/plain@1.1,1.0:TxRx>'
-      % (getAddressSize(), sys.maxint))
+      % (getAddressSize(), getMaxMemorySize()))
     ctxt1.save()
     server2 = pysyncml.Context(engine=db, owner=None, autoCommit=True).Adapter()
     self.assertEqual(server2.stores.keys(), ['srv_note'])

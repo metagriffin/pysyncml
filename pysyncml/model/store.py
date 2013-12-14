@@ -119,7 +119,7 @@ def decorateModel(model):
       #       NULL values remain NULL during a flush) - since they are valid.
       self._syncTypes  = kw.get('syncTypes',   repr(Store.allSyncTypes))
       self.maxGuidSize = kw.get('maxGuidSize', common.getAddressSize())
-      self.maxObjSize  = kw.get('maxObjSize',  sys.maxint)
+      self.maxObjSize  = kw.get('maxObjSize',  common.getMaxMemorySize())
       super(Store, self).__init__(**kw)
 
     #----------------------------------------------------------------------------
