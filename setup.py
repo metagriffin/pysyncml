@@ -72,7 +72,7 @@ setup(
   name                  = 'pysyncml',
   version               = read('VERSION.txt', default='0.0.1').strip(),
   description           = 'A pure-python implementation of the SyncML adapter framework and protocol.',
-  long_description      = open(os.path.join(os.path.dirname(__file__), 'README.txt'), 'rb').read(),
+  long_description      = read('README.rst'),
   classifiers           = classifiers,
   author                = 'metagriffin',
   author_email          = 'mg.pypi@uberdev.org',
