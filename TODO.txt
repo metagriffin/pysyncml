@@ -1,0 +1,64 @@
+Todo List
+=========
+
+* Use coverage to ensure that all code paths are tested in unit tests.
+  OK, now that coverage has been added, bring that to 100%...
+
+* If no logging is done, then configure the log subsystem for silence to
+  avoid the "no logger configured" warning.
+
+* The mapping table needs better management, e.g. if the peer store is
+  rerouted, then all mappings should get dropped. There are more cases where
+  the mappings will fall out of sync... rethink that.
+
+* Make smarter determination of what syncmode to use during initialization.
+  i.e. check last anchors with peer...
+
+* Handle 508 (refresh-required) response to alert command.
+
+* Soft deletes should be handled by the framework... one significant problem
+  with this approach is that ID's may get recycled by the underlying agent,
+  which would be a show-stopper.
+
+* In server mode, set the "Target/LocName" to the current username, e.g.:
+    <SyncML>
+      <SyncHdr>
+        <Target>
+          <LocURI>IMEI:cc20f0e5-338b-42c1-8f51-137a15238892</LocURI>
+          <LocName>USERNAME</LocName>
+        </Target>
+        ...
+
+* Currently, the Adapter has a "peer" attribute that represents the peer that
+  it is currently being synchronized with. This is good for ease-of-use, but
+  bad when trying to re-use an Adapter either for multiple peers (i.e. for
+  servers), or multiple synchronizations for clients. The current peer should
+  become part of the "session" object or some other context-providing object.
+
+* Implement conflict detection and handling, make sure that there is some
+  kind of "policy" to control that.
+
+* Replace all bit-dependant items (e.g. MaxGUIDSize, etc)
+    http://stackoverflow.com/questions/1842544/how-do-i-detect-if-python-is-running-as-a-64-bit-application
+      import platform
+      platform.architecture()
+
+* Implement inactive peer cleanup; default to 365 days?...
+
+* Handle 512 (synchronization-failed) response to sync header due to
+  MaxMsgSize being too large. or, more correctly, implement auto-detection
+  of remote peer so that pysyncml can adjust capabilities...
+
+* Implement auto-adjust of remote peers:
+    Funambol/10.0.0:
+      - MaxMsgSize and MaxObjSize are limited (2GB? maybe more)
+      - SupportHierarchicalSync causes abort
+
+* Abort if a store has no contentTypes...
+
+* To remove users from the database, support a new option "--delete-username".
+
+* When an item is deleted from the server datastore and the deletion gets
+  propagated to a client, ensure it is delete from the mapping as well.
+
+* sync-notes should rename a file that has only been renamed.
