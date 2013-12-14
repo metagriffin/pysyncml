@@ -196,22 +196,5 @@ def canonicalXml(data):
     return data
 
 #------------------------------------------------------------------------------
-class XmlEqual(MultiLineEqual):
-
-  #----------------------------------------------------------------------------
-  def assertEqualXml(self, expected, received, msg=None, tryCanonical=True):
-    try:
-      self.assertEqual(chk, tgt)
-      return
-    except Exception:
-      if tryCanonical:
-        return self.assertEqualXml(canonicalXml(expected), canonicalXml(received),
-                                   msg, False)
-      def n(s):
-        return s.replace('><', '>\n<').replace('>$', '>\n$').replace(')<', ')\n<')
-      self.maxDiff = None
-      self.assertMultiLineEqual(n(str(expected)), n(str(received)), msg)
-
-#------------------------------------------------------------------------------
 # end of $Id$
 #------------------------------------------------------------------------------

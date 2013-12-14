@@ -20,7 +20,8 @@
 #------------------------------------------------------------------------------
 
 import unittest, sys, os, re, time, logging
-import sqlalchemy
+import sqlalchemy as sa, pxml
+
 import pysyncml
 from .common import adict, ts_iso, getAddressSize, getMaxMemorySize
 from . import test_helpers
@@ -104,7 +105,7 @@ class ProxyPeer(object):
     adapter.handleRequest(session, response)
 
 #------------------------------------------------------------------------------
-class TestClient(unittest.TestCase, test_helpers.XmlEqual):
+class TestClient(unittest.TestCase, pxml.XmlTestMixin):
 
   #----------------------------------------------------------------------------
   def setUp(self):
@@ -114,10 +115,10 @@ class TestClient(unittest.TestCase, test_helpers.XmlEqual):
   #----------------------------------------------------------------------------
   def initDatabases(self):
     self.items = ItemStorage(nextID=1000)
-    self.db    = sqlalchemy.create_engine('sqlite://')
+    self.db    = sa.create_engine('sqlite://')
     # if os.path.exists('../test.db'):
     #   os.unlink('../test.db')
-    # self.db = sqlalchemy.create_engine('sqlite:///../test.db')
+    # self.db = sa.create_engine('sqlite:///../test.db')
     pysyncml.enableSqliteCascadingDeletes(self.db)
 
   #----------------------------------------------------------------------------
@@ -235,7 +236,7 @@ class TestClient(unittest.TestCase, test_helpers.XmlEqual):
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
     self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertEqualXml(chk.body, proxy.request.body)
+    self.assertXmlEqual(chk.body, proxy.request.body)
 
     # step 2: server responds, client sets up routes and requests sync
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -384,7 +385,7 @@ class TestClient(unittest.TestCase, test_helpers.XmlEqual):
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
     self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertEqualXml(chk.body, proxy.request.body)
+    self.assertXmlEqual(chk.body, proxy.request.body)
     self.assertEqual('http://www.example.com/sync;s=9D35ACF5AEDDD26AC875EE1286F3C048', proxy.session.respUri)
 
     # step 3: server responds, client sends all of its data (none in this case)
@@ -501,7 +502,7 @@ class TestClient(unittest.TestCase, test_helpers.XmlEqual):
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
     self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertEqualXml(chk.body, proxy.request.body)
+    self.assertXmlEqual(chk.body, proxy.request.body)
 
     # step 4: server responds, client sends mapping
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
@@ -618,7 +619,7 @@ class TestClient(unittest.TestCase, test_helpers.XmlEqual):
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
     self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertEqualXml(chk.body, proxy.request.body)
+    self.assertXmlEqual(chk.body, proxy.request.body)
     self.assertEqual([1000], self.items.entries.keys())
     self.assertEqual('some text content', self.items.entries[1000].body)
 

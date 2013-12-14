@@ -20,7 +20,8 @@
 #------------------------------------------------------------------------------
 
 import unittest, sys, os, re, time, logging
-import sqlalchemy
+import sqlalchemy as sa, pxml
+
 import pysyncml
 from .common import adict, ts, ts_iso, getAddressSize, getMaxMemorySize
 from . import codec, test_helpers
@@ -66,7 +67,7 @@ def findxml(xml, xpath):
   return xtree.findtext(xpath)
 
 #------------------------------------------------------------------------------
-class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDictEqual):
+class TestServer(unittest.TestCase, pxml.XmlTestMixin, test_helpers.TrimDictEqual):
 
   #----------------------------------------------------------------------------
   def assertIntsNear(self, chk, val, offset=1):
@@ -82,10 +83,10 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
   #----------------------------------------------------------------------------
   def initDatabases(self):
     self.items   = ItemStorage(nextID=1000)
-    self.db      = sqlalchemy.create_engine('sqlite://')
+    self.db      = sa.create_engine('sqlite://')
     # if os.path.exists('../test.db'):
     #   os.unlink('../test.db')
-    # self.db = sqlalchemy.create_engine('sqlite:///../test.db')
+    # self.db = sa.create_engine('sqlite:///../test.db')
     pysyncml.enableSqliteCascadingDeletes(self.db)
 
   #----------------------------------------------------------------------------
@@ -489,7 +490,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
 
   #----------------------------------------------------------------------------
   def test_devinfo_dbsaveload(self):
-    db = sqlalchemy.create_engine('sqlite://')
+    db = sa.create_engine('sqlite://')
     ctxt1 = pysyncml.Context(engine=db, owner=None, autoCommit=True)
     server1 = ctxt1.Adapter(devinfo=ctxt1.DeviceInfo(
       devID             = __name__ + '.server',
@@ -505,7 +506,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
 
   #----------------------------------------------------------------------------
   def test_store_saved_to_db(self):
-    db = sqlalchemy.create_engine('sqlite://')
+    db = sa.create_engine('sqlite://')
     ctxt1 = pysyncml.Context(engine=db, owner=None, autoCommit=True)
     server1 = ctxt1.Adapter(devinfo=ctxt1.DeviceInfo(
       devID             = __name__ + '.server',
@@ -653,7 +654,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
 
   #----------------------------------------------------------------------------
   def test_effective_id(self):
@@ -758,7 +759,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
 
   #----------------------------------------------------------------------------
   def test_new_peer_store(self):
@@ -904,7 +905,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
     # TODO: confirm that the session object looks good...
     server2 = pysyncml.Context(engine=self.db, owner=None, autoCommit=True).Adapter()
     peers = server2.getKnownPeers()
@@ -1003,7 +1004,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
 
   #----------------------------------------------------------------------------
   def test_sync_push_one(self):
@@ -1092,7 +1093,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
 
   #----------------------------------------------------------------------------
   def test_sync_map(self):
@@ -1174,7 +1175,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
 
   #----------------------------------------------------------------------------
   def test_two_peers(self):
@@ -1368,7 +1369,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
     # step 7: synchronize - send nothing and expect changes down (update to item)
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1434,7 +1435,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
     # step 8: send final status and nothing further
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1637,7 +1638,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
     # step 7: synchronize - send nothing and expect changes down (update to item)
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1703,7 +1704,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
     # step 8: send final status and nothing further
     self.initServer()
     request = adict(headers=dict((('content-type', 'application/vnd.syncml+xml'),)),
@@ -1853,7 +1854,7 @@ class TestServer(unittest.TestCase, test_helpers.XmlEqual, test_helpers.TrimDict
                 ' </SyncBody>'
                 '</SyncML>')
     self.assertEqual(chk.headers['content-type'], response.contentType)
-    self.assertEqualXml(chk.body, response.body)
+    self.assertXmlEqual(chk.body, response.body)
 
 #------------------------------------------------------------------------------
 # end of $Id$
