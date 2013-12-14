@@ -34,7 +34,9 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.declarative import _declarative_constructor as SaInit
 from sqlalchemy.orm import relation, synonym, backref, sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
+
 import pysyncml
+from pysyncml.i18n import _
 
 log = logging.getLogger(__name__)
 
@@ -250,111 +252,124 @@ class CommandLineSyncEngine(object):
     self._callHooks('options.setup.init')
 
     self.parser.add_argument(
-      '-V', '--version', action='version',
+      _('-V'), _('--version'),
+      dest='version', action='version',
       version='%(prog)s ' + pysyncml.versionString,
-      help='displays the program version and exits')
+      help=_('displays the program version and exits'))
 
     # TODO: i18n!...
     self.parser.add_argument(
-      '-v', '--verbose', default=0, action='count',
-      help='enable verbose output to STDERR, mostly for diagnostic'
-      ' purposes (multiple invocations increase verbosity)')
+      _('-v'), _('--verbose'),
+      dest='verbose', default=0, action='count',
+      help=_('enable verbose output to STDERR, mostly for diagnostic'
+             ' purposes (multiple invocations increase verbosity)'))
 
     self.parser.add_argument(
-      '-q', '--quiet', default=False, action='store_true',
-      help='do not display sync summary')
+      _('-q'), _('--quiet'),
+      dest='quiet', default=False, action='store_true',
+      help=_('do not display sync summary'))
 
     self._callHooks('options.setup.generic')
 
     self.parser.add_argument(
-      '-d', '--describe', default=False, action='store_true',
-      help='configure the local SyncML adapter, display a summary'
-      ' and exit without actually synchronizing')
+      _('-d'), _('--describe'),
+      dest='describe', default=False, action='store_true',
+      help=_('configure the local SyncML adapter, display a summary'
+             ' and exit without actually synchronizing'))
 
     self.parser.add_argument(
-      '-l', '--local', default=False, action='store_true',
-      help='display the pending local changes and exit'
-      ' without actually synchronizing')
+      _('-l'), _('--local'),
+      dest='local', default=False, action='store_true',
+      help=_('display the pending local changes and exit'
+             ' without actually synchronizing'))
 
     # todo: this "generated based on..." is potentially not accurate
     #       if the subclass overrides it...
     self.parser.add_argument(
-      '-i', '--id', dest='devid', default=None, action='store',
-      help='overrides the default device ID, either the stored'
-      ' value from a previous sync or the generated default'
-      ' (currently "%s" - generated based on local MAC address'
-      ' and current time)'
-      % (self.defaultDevID,))
+      _('-i'), _('--id'),
+      dest='devid', default=None, action='store',
+      help=_('overrides the default device ID, either the stored'
+             ' value from a previous sync or the generated default'
+             ' (currently "{}" - generated based on local MAC address'
+             ' and current time)', self.defaultDevID))
 
     # todo: perhaps display the default from persisted values?...
     self.parser.add_argument(
-      '-n', '--name', default=None, action='store',
-      help='sets the local adapter/store name (default: "%s")'
-      % (self.appDisplay,))
+      _('-n'), _('--name'),
+      dest='name', default=None, action='store',
+      help=_('sets the local adapter/store name (default: "{}")',
+             self.appDisplay))
 
     self.parser.add_argument(
-      '-m', '--mode', default='sync', action='store',
-      help='set the synchronization mode - can be one of "sync"'
-      ' (for two-way synchronization), "full" (for a complete'
-      ' re-synchronization), "pull" (for fetching remote'
-      ' changes only), "push" (for pushing local changes only),'
-      ' or "pull-over" (to obliterate the local data and'
-      ' download the remote data) or "push-over" (to obliterate'
-      ' the remote data and upload the local data) - the default'
-      ' is "%(default)s"')
+      _('-m'), _('--mode'),
+      dest='mode', default='sync', action='store',
+      help=_('set the synchronization mode - can be one of "sync"'
+             ' (for two-way synchronization), "full" (for a complete'
+             ' re-synchronization), "pull" (for fetching remote'
+             ' changes only), "push" (for pushing local changes only),'
+             ' or "pull-over" (to obliterate the local data and'
+             ' download the remote data) or "push-over" (to obliterate'
+             ' the remote data and upload the local data) - the default'
+             ' is "%(default)s"'))
 
     # todo: this "only required..." is potentially not accurate
     self.parser.add_argument(
-      '-r', '--remote', metavar='URL', default=None, action='store',
-      help='specifies the remote URL of the SyncML synchronization'
-      ' server - only required if the target DIRECTORY has never'
-      ' been synchronized, or the synchronization meta information'
-      ' was lost')
+      _('-r'), _('--remote'), metavar=_('URL'),
+      dest='remote', default=None, action='store',
+      help=_('specifies the remote URL of the SyncML synchronization'
+             ' server - only required if the target DIRECTORY has never'
+             ' been synchronized, or the synchronization meta information'
+             ' was lost'))
 
     self.parser.add_argument(
-      '-R', '--remote-uri', metavar='URI',
+      _('-R'), _('--remote-uri'), metavar=_('URI'),
       dest='remoteUri', default=None, action='store',
-      help='specifies the remote datastore URI to bind to. if'
-      ' left unspecified, pysyncml will attempt to identify it'
-      ' automatically')
+      help=_('specifies the remote datastore URI to bind to. if'
+             ' left unspecified, pysyncml will attempt to identify it'
+             ' automatically'))
 
     self.parser.add_argument(
-      '-s', '--server', default=False, action='store_true',
-      help='enables HTTP server mode. NOTE: currently, a given'
-      ' directory should not be used for both client and server'
-      ' modes (this can and will eventually be resolved).')
+      _('-s'), _('--server'),
+      dest='server', default=False, action='store_true',
+      help=_('enables HTTP server mode. NOTE: currently, a given'
+             ' directory should not be used for both client and server'
+             ' modes (this can and will eventually be resolved).'))
 
     self.parser.add_argument(
-      '-L', '--listen', metavar='PORT', default=None, action='store', type=int,
-      help='specifies the port to listen on for server mode'
-      ' (implies --server and defaults to port %d)'
-      % (self.defaultListen,))
+      _('-L'), _('--listen'), metavar=_('PORT'),
+      dest='listen', default=None, action='store', type=int,
+      help=_('specifies the port to listen on for server mode'
+             ' (implies --server and defaults to port {})',
+             self.defaultListen))
 
     self.parser.add_argument(
-      '-P', '--policy', metavar='POLICY', default=None, action='store',
-      help='specifies the conflict resolution policy that this'
-      ' SyncML peer (when operating as the server role) should use'
-      ' to resolve conflicts that cannot be merged or otherwise'
-      ' resolved -- can be one of "error" (default), "client-wins"'
-      ' or "server-wins"')
+      _('-P'), _('--policy'), metavar=_('POLICY'),
+      dest='policy', default=None, action='store',
+      help=_('specifies the conflict resolution policy that this'
+             ' SyncML peer (when operating as the server role) should use'
+             ' to resolve conflicts that cannot be merged or otherwise'
+             ' resolved -- can be one of "error" (default), "client-wins"'
+             ' or "server-wins"'))
 
     self.parser.add_argument(
-      '-u', '--username', default=None, action='store',
-      help='specifies the remote server username to log in with'
-      ' (in client mode) or to require authorization for (in'
-      ' server mode)')
+      _('-u'), _('--username'),
+      dest='username', default=None, action='store',
+      help=_('specifies the remote server username to log in with'
+             ' (in client mode) or to require authorization for (in'
+             ' server mode)'))
 
     self.parser.add_argument(
-      '-p', '--password', default=None, action='store',
-      help='specifies the remote server password to log in with'
-      ' in client mode (if "--remote" and "--username" is'
-      ' specified, but not "--password", the password will be'
-      ' prompted for to avoid leaking the password into the'
-      ' local hosts environment, which is the recommended'
-      ' approach). in server mode, specifies the password for'
-      ' the required username (a present "--username" and missing'
-      ' "--password" is handled the same way as in client'
-      ' mode)')
+      _('-p'), _('--password'),
+      dest='password', default=None, action='store',
+      help=_('specifies the remote server password to log in with'
+             ' in client mode (if "--remote" and "--username" is'
+             ' specified, but not "--password", the password will be'
+             ' prompted for to avoid leaking the password into the'
+             ' local hosts environment, which is the recommended'
+             ' approach). in server mode, specifies the password for'
+             ' the required username (a present "--username" and missing'
+             ' "--password" is handled the same way as in client'
+             ' mode)'))
 
     self._callHooks('options.setup.term')
 

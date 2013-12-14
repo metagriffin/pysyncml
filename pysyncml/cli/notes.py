@@ -70,9 +70,11 @@ import sys, os, re, logging, hashlib
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.orm.exc import NoResultFound
+
 import pysyncml
 import pysyncml.cli
 from pysyncml import adict
+from pysyncml.i18n import _
 
 #------------------------------------------------------------------------------
 # GLOBALS
@@ -125,14 +127,14 @@ class NotesEngine(pysyncml.cli.DirectorySyncEngine):
     # attribute. for example, here an extra parameter "--no-filename-sync"
     # is being added to the end of the standard parameters.
     self.parser.add_argument(
-      '-F', '--no-filename-sync',
+      _('-F'), _('--no-filename-sync'),
       dest='syncFilename', default=True, action='store_false',
-      help='by default, a change in a note\'s filename will cause the item'
-      ' to be synchronized, even if there was no change to the content. This'
-      ' option overrides this behavior to only synchronize filename changes'
-      ' if there are also content changes (this is primarily useful to reduce'
-      ' the overhead when synchronizing with a peer that does not properly'
-      ' support filename synchronization, such as funambol).')
+      help=_('by default, a change in a note\'s filename will cause the item'
+             ' to be synchronized, even if there was no change to the content. This'
+             ' option overrides this behavior to only synchronize filename changes'
+             ' if there are also content changes (this is primarily useful to reduce'
+             ' the overhead when synchronizing with a peer that does not properly'
+             ' support filename synchronization, such as funambol).'))
     self.parser.description = \
       'Synchronizes notes stored as files in a directory' \
       ' using the SyncML protocol - see' \
