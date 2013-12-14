@@ -237,8 +237,8 @@ class TestClient(unittest.TestCase, pxml.XmlTestMixin):
                 '</SyncML>')
     self.assertTrue(proxy.pending)
     self.assertTrue(proxy.request is not None)
-    self.assertEqual(chk.headers['content-type'], proxy.request.contentType)
-    self.assertXmlEqual(chk.body, proxy.request.body)
+    self.assertEqual(proxy.request.contentType, chk.headers['content-type'])
+    self.assertXmlEqual(proxy.request.body, chk.body)
 
     # step 2: server responds, client sets up routes and requests sync
     response = adict(headers=dict((('content-type', 'application/vnd.syncml+xml; charset=UTF-8'),)),
