@@ -21,7 +21,6 @@
 
 import unittest, re
 import xml.etree.ElementTree as ET
-from StringIO import StringIO as sio
 from . import ctype, constants
 
 #------------------------------------------------------------------------------

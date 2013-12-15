@@ -24,7 +24,7 @@ The ``pysyncml.common`` package provides some commonly used helper routines
 and classes used throughout the pysyncml package.
 '''
 
-import sys, time, calendar, inspect, StringIO, pkg_resources, platform
+import sys, time, calendar, inspect, six, pkg_resources, platform
 import xml.etree.ElementTree as ET
 from . import constants
 

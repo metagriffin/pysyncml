@@ -20,7 +20,7 @@
 #------------------------------------------------------------------------------
 
 import unittest, re
-from StringIO import StringIO as sio
+
 from . import common, constants
 from .common import adict
 
@@ -36,7 +36,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_indent(self):
-    buf = sio()
+    buf = six.StringIO()
     out = common.IndentStream(buf, '>>')
     out.write('hi')
     self.assertMultiLineEqual(buf.getvalue(), '>>hi')
@@ -46,7 +46,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_indent_print(self):
-    buf = sio()
+    buf = six.StringIO()
     out = common.IndentStream(buf, '>>')
     out.write('hi')
     self.assertMultiLineEqual(buf.getvalue(), '>>hi')
@@ -62,7 +62,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_describeStats(self):
-    buf = sio()
+    buf = six.StringIO()
     stats = dict(note=adict(
       mode=constants.SYNCTYPE_TWO_WAY,conflicts=0,merged=0,
       hereAdd=10,hereMod=0,hereDel=0,hereErr=0,
@@ -82,7 +82,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_describeStats_noTotals(self):
-    buf = sio()
+    buf = six.StringIO()
     stats = dict(note=adict(
       mode=constants.SYNCTYPE_TWO_WAY,conflicts=0,merged=0,
       hereAdd=10,hereMod=0,hereDel=0,hereErr=0,
@@ -100,7 +100,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_describeStats_title(self):
-    buf = sio()
+    buf = six.StringIO()
     stats = dict(note=adict(
       mode=constants.SYNCTYPE_TWO_WAY,conflicts=0,merged=0,
       hereAdd=10,hereMod=0,hereDel=0,hereErr=0,
@@ -122,7 +122,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_describeStats_errors(self):
-    buf = sio()
+    buf = six.StringIO()
     stats = dict(note=adict(
       mode=constants.SYNCTYPE_TWO_WAY,conflicts=0,merged=0,
       hereAdd=10,hereMod=0,hereDel=0,hereErr=1,
@@ -144,7 +144,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_describeStats_multiwide(self):
-    buf = sio()
+    buf = six.StringIO()
     stats = dict(note=adict(
       mode=constants.SYNCTYPE_SLOW_SYNC,conflicts=0,merged=0,
       hereAdd=1308,hereMod=0,hereDel=2,hereErr=0,
@@ -169,7 +169,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_describeStats_titleAndTotals(self):
-    buf = sio()
+    buf = six.StringIO()
     stats = dict(note=adict(
       mode=constants.SYNCTYPE_SLOW_SYNC,conflicts=0,merged=0,
       hereAdd=1308,hereMod=0,hereDel=2,hereErr=0,
@@ -189,7 +189,7 @@ class TestCommon(unittest.TestCase):
 
   #----------------------------------------------------------------------------
   def test_describeStats_totals(self):
-    buf = sio()
+    buf = six.StringIO()
     stats = dict(note=adict(
       mode=constants.SYNCTYPE_SLOW_SYNC,conflicts=0,merged=0,
       hereAdd=1308,hereMod=0,hereDel=2,hereErr=0,
@@ -208,7 +208,7 @@ class TestCommon(unittest.TestCase):
     stats['note'].merged    = 3
     stats['note'].conflicts = 2
     stats['note'].hereErr   = 2
-    buf = sio()
+    buf = six.StringIO()
     common.describeStats(stats, buf, details=False)
     chk = '''
 +------------------------------------------------------------------------------------+

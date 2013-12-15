@@ -25,7 +25,7 @@ The ``pysyncml.items.base`` module defines the abstract interface
 all pysyncml synchronized objects.
 '''
 
-import StringIO
+import six
 from .. import constants
 
 #------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ class Item(object):
     should be overridden or enhanced. The default implementation just
     wraps :meth:`dump`.
     '''
-    buf = StringIO.StringIO()
+    buf = six.StringIO()
     ret = self.dump(buf, contentType, version)
     if ret is None:
       return buf.getvalue()
@@ -104,7 +104,7 @@ class Item(object):
     is provided as a string representation in `data` instead of as a
     stream. The default implementation just wraps :meth:`load`.
     '''
-    buf = StringIO.StringIO(data)
+    buf = six.StringIO(data)
     return cls.load(buf, contentType, version)
 
   #----------------------------------------------------------------------------

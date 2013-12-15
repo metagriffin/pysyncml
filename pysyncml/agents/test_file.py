@@ -19,7 +19,7 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------
 
-import unittest, sys, os, logging, StringIO
+import unittest, sys, os, logging, six
 import sqlalchemy
 import pysyncml
 from .file import BaseFileAgent
@@ -100,7 +100,7 @@ class BridgingOpener(object):
     response = state.Request()
     self.peer.handleRequest(self.session, request, response)
     self.log('response', response.body)
-    res = StringIO.StringIO(response.body)
+    res = six.StringIO(response.body)
     res.info = lambda: adict(headers=['content-type: %s' % (response.contentType,)])
     return res
 

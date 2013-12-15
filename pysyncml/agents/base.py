@@ -25,7 +25,7 @@ This module defines the abstract interface :class:`pysyncml.Agent
 synchronization agents.
 '''
 
-import sys, json, StringIO
+import sys, json, six
 import xml.etree.ElementTree as ET
 from ..common import ConflictError
 
@@ -112,7 +112,7 @@ class Agent(object):
     should be overridden or enhanced. The default implementation just
     wraps :meth:`dump`.
     '''
-    buf = StringIO.StringIO()
+    buf = six.StringIO()
     ret = self.dumpItem(item, buf, contentType, version)
     if ret is None:
       return buf.getvalue()
@@ -139,7 +139,7 @@ class Agent(object):
     as a stream. The default implementation just wraps
     :meth:`loadItem`.
     '''
-    buf = StringIO.StringIO(data)
+    buf = six.StringIO(data)
     return self.loadItem(buf, contentType, version)
 
   #============================================================================

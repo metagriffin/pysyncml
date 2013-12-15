@@ -20,7 +20,7 @@
 #------------------------------------------------------------------------------
 
 import unittest, re
-from StringIO import StringIO as sio
+
 from .. import common, constants
 from ..common import adict, ConflictError
 from .merger import *
