@@ -62,7 +62,7 @@ class Session(adict):
 
 #------------------------------------------------------------------------------
 class Request(adict): pass
-Response = Request
+class Response(adict): pass
 
 #------------------------------------------------------------------------------
 class Command(adict):
