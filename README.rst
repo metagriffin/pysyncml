@@ -12,7 +12,7 @@ want to add data synchronization support via SyncML.
 
 .. important::
 
-  2012/09/16: pysyncml is currently beta. That means it has not had
+  2013/12/15: pysyncml is currently beta. That means it has not had
   much "real-world" experience and you may encounter many
   bugs. However, it is being actively developed, so check back in a
   couple of months.
@@ -21,13 +21,15 @@ want to add data synchronization support via SyncML.
   full backup of your data *before* you use pysyncml to synchronize
   production data.
 
-  Working components as of 0.1.dev-r60:
+  Working components as of 0.2.0:
 
   * Client-side SyncML framework with support for CRUD operations,
     i.e. Add/Replace/Delete Sync commands.
 
   * Server-side SyncML framework with support for CRUD operations,
-    i.e. Add/Replace/Delete Sync commands.
+    i.e. Add/Replace/Delete Sync commands, **BUT** it is not
+    recommended to use server-side yet, as some API changes are
+    expected.
 
   * Server-side conflict detection and multi-policy resolution.
 
