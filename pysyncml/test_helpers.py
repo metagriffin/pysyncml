@@ -19,9 +19,10 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------
 
-import unittest, sys, re, difflib, logging, xml.dom, xml.dom.minidom
-from . import constants, common
+import unittest, sys, six, re, difflib, logging, xml.dom, xml.dom.minidom
 
+from . import constants, common, state
+from .common import adict
 
 #------------------------------------------------------------------------------
 class LogFormatter(logging.Formatter):
@@ -171,6 +172,60 @@ class MultiLineEqual:
     for line in cdiff:
       print line
     self.assertEqual('received', 'expected')
+
+#------------------------------------------------------------------------------
+# LEGACY LEGACY LEGACY LEGACY LEGACY LEGACY LEGACY LEGACY LEGACY LEGACY LEGACY
+#------------------------------------------------------------------------------
+# TODO: the following is legacy support for unittests which still
+#       expect the old implementation of Adapter._handleRequestRemote,
+#       which did not use the requests package. upgrade the unit tests!
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+def LEGACY_Adapter__handleRequestRemote(self, session, request, adapter):
+  import urllib2
+  req = urllib2.Request(session.respUri or self.url, request.body)
+  req.add_header('content-type', request.contentType or 'application/vnd.syncml+xml')
+  req.add_header('x-syncml-client', 'pysyncml/' + common.version)
+  res = self._opener.open(req, request.body)
+  res = state.Request(body=res.read(), headers=res.info().headers)
+  res.headers = [map(lambda x: x.strip(), h.split(':', 1))
+                 for h in res.headers]
+  res.headers = dict([(k.lower(), v) for k, v in res.headers])
+  adapter.handleRequest(session, res)
+def LEGACY_makeRequestHandler(peer):
+  import new
+  return new.instancemethod(LEGACY_Adapter__handleRequestRemote, peer, peer.__class__)
+
+#------------------------------------------------------------------------------
+class LEGACY_BridgingOpener(object):
+
+  #----------------------------------------------------------------------------
+  def __init__(self, adapter=None, peer=None, returnUrl=None, refresher=None):
+    self.peer = peer
+    self.refresher = refresher
+    if self.refresher is None:
+      self.refresher = lambda peer: peer
+    self.session = state.Session()
+    if returnUrl is not None:
+      self.session.returnUrl = returnUrl
+
+  #----------------------------------------------------------------------------
+  def open(self, req, data=None, timeout=None):
+    self.peer = self.refresher(self.peer)
+    self.log('request', data)
+    request = adict(headers=dict(), body=data)
+    request.headers['content-type'] = req.headers['Content-type']
+    response = state.Request()
+    self.peer.handleRequest(self.session, request, response)
+    self.log('response', response.body)
+    res = six.StringIO(response.body)
+    res.info = lambda: adict(headers=['content-type: %s' % (response.contentType,)])
+    return res
+
+  #----------------------------------------------------------------------------
+  def log(self, iline, content):
+    return
 
 #------------------------------------------------------------------------------
 # end of $Id$

@@ -24,10 +24,13 @@ The ``pysyncml.model.adapter`` package exposes the Adapter implementation of
 the pysyncml package.
 '''
 
-import sys, os, time, logging, urllib2, cookielib
+import sys, os, time, logging
 from sqlalchemy import orm
 from sqlalchemy import Column, Integer, Boolean, String, Text, ForeignKey
 from sqlalchemy.orm import relation, synonym, backref
+import requests
+from requests.structures import CaseInsensitiveDict as idict
+
 from .. import common, constants, codec, state
 
 log = logging.getLogger(__name__)
@@ -109,15 +112,7 @@ def decorateModel(model):
     #--------------------------------------------------------------------------
     def _initHelpers(self):
       if not self.isLocal:
-        self._ckjar    = cookielib.CookieJar()
-        # todo: should i be using the default opener instead?...
-        #       i think the only reason that a custom opener is useful is to
-        #       be able to add cookie handling - but can't that be done with
-        #       the default opener as well?...
-        self._opener   = urllib2.OpenerDirector()
-        self._opener.add_handler(urllib2.HTTPHandler())
-        self._opener.add_handler(urllib2.HTTPSHandler())
-        self._opener.add_handler(urllib2.HTTPCookieProcessor(self._ckjar))
+        self._ckjar = idict()
 
     #--------------------------------------------------------------------------
     def cleanUri(self, uri):
@@ -283,24 +278,23 @@ def decorateModel(model):
 
     #----------------------------------------------------------------------------
     def _handleRequestRemote(self, session, request, adapter):
-      # TODO: should this be broken out into a separate sub-class?...
-      req = urllib2.Request(session.respUri or self.url, request.body)
-      req.add_header('content-type', request.contentType or 'application/vnd.syncml+xml')
-      req.add_header('x-syncml-client', 'pysyncml/' + common.versionString)
-      # todo: add any other syncml headers?...
-      # # ***********************************************************************
-      # # TODO: **HACKALERT** **HACKALERT** **HACKALERT** **HACKALERT** **HACKALERT**
-      # #      remove this HACK!...
-      # req.adapter = adapter
-      # req.session = session
-      # # ***********************************************************************
-      res = self._opener.open(req, request.body)
-      # TODO: check response status...
-      res = state.Request(body=res.read(), headers=res.info().headers)
-      res.headers = [map(lambda x: x.strip(), h.split(':', 1))
-                     for h in res.headers]
-      res.headers = dict([(k.lower(), v) for k, v in res.headers])
-      adapter.handleRequest(session, res)
+      res = requests.post(
+        session.respUri or self.url,
+        headers  = {
+          'content-type'    : request.contentType or 'application/vnd.syncml+xml',
+          'x-syncml-client' : 'pysyncml/' + common.version,
+          },
+        cookies  = self._ckjar,
+        data     = request.body,
+        )
+      # TODO: improve this handling
+      if res.status_code != 200:
+        log.error('unexpected response: [%d] %s', res.status_code, res.reason)
+        raise common.ProtocolError('error response: [%d] %s'
+                                   % (res.status_code, res.reason))
+      self._ckjar.update(res.cookies)
+      adapter.handleRequest(session, state.Request(
+        body=res.content, headers=res.headers))
 
     #--------------------------------------------------------------------------
     def _receive(self, session, request):

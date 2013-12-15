@@ -44,6 +44,7 @@ dependencies = [
   'PyYAML               >= 3.10',
   'SQLAlchemy           >= 0.7.7',
   'asset                >= 0.0.5',
+  'requests             >= 2.1.0',
   ]
 
 entrypoints = {

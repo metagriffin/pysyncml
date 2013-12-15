@@ -28,7 +28,8 @@ from ..items.folder import FolderItem
 from .. import state
 from ..common import adict
 from .. import test_helpers
-from ..test_helpers import makestats as stat, setlogging
+from ..test_helpers import makestats as stat, setlogging, \
+  LEGACY_BridgingOpener, LEGACY_makeRequestHandler
 
 setlogging(False)
 
@@ -77,51 +78,6 @@ class Agent(BaseFileAgent):
     #   if curitem.body == item.body:
     #     return curitem
     return None
-
-#------------------------------------------------------------------------------
-class BridgingOpener(object):
-
-  #----------------------------------------------------------------------------
-  def __init__(self, adapter=None, peer=None, returnUrl=None, refresher=None):
-    self.peer = peer
-    self.refresher = refresher
-    if self.refresher is None:
-      self.refresher = lambda peer: peer
-    self.session = pysyncml.Session()
-    if returnUrl is not None:
-      self.session.returnUrl = returnUrl
-
-  #----------------------------------------------------------------------------
-  def open(self, req, data=None, timeout=None):
-    self.peer = self.refresher(self.peer)
-    self.log('request', data)
-    request = adict(headers=dict(), body=data)
-    request.headers['content-type'] = req.headers['Content-type']
-    response = state.Request()
-    self.peer.handleRequest(self.session, request, response)
-    self.log('response', response.body)
-    res = six.StringIO(response.body)
-    res.info = lambda: adict(headers=['content-type: %s' % (response.contentType,)])
-    return res
-
-  #----------------------------------------------------------------------------
-  def log(self, iline, content):
-    try:
-      import utools.pxml
-      from utools.common import Font
-      with open('../%s-%d.log' % (__name__, os.getpid()), 'ab') as fp:
-        if iline == 'request':
-          color = Font.get(Font.Style.BRIGHT, Font.Fg.RED, Font.Bg.BLACK)
-          symbol = '>'
-        else:
-          color = Font.get(Font.Style.BRIGHT, Font.Fg.GREEN, Font.Bg.BLACK)
-          symbol = '<'
-        fp.write('%s%s %s:%s %s%s\n'
-                 % (color, symbol * 5, iline.upper(), self.peer.devID,
-                    symbol * 5, Font.reset()))
-        fp.write(utools.pxml.prettyXml(content, strict=False, color=True) or content)
-    except Exception,e:
-      return
 
 #------------------------------------------------------------------------------
 class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
@@ -181,10 +137,11 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
       self.desktop.peer = self.desktopContext.RemoteAdapter(
         url='http://www.example.com/sync',
         auth=pysyncml.NAMESPACE_AUTH_BASIC, username='guest', password='guest')
-    self.desktop.peer._opener = BridgingOpener(
+    self.desktop.peer._opener = LEGACY_BridgingOpener(
       returnUrl='http://example.com/sync?s=123-DESKTOP',
       refresher=self.refreshServer,
       )
+    self.desktop.peer._handleRequestRemote = LEGACY_makeRequestHandler(self.desktop.peer)
     self.desktopStore = self.desktop.addStore(self.desktopContext.Store(
       uri='dfile', displayName='Desktop File Client',
       agent=Agent(storage=self.desktopItems)))
@@ -205,10 +162,11 @@ class TestFileAgent(unittest.TestCase, test_helpers.TrimDictEqual):
       self.mobile.peer = self.mobileContext.RemoteAdapter(
         url='http://www.example.com/sync',
         auth=pysyncml.NAMESPACE_AUTH_BASIC, username='guest', password='guest')
-    self.mobile.peer._opener = BridgingOpener(
+    self.mobile.peer._opener = LEGACY_BridgingOpener(
       returnUrl='http://example.com/sync?s=ABC-MOBILE',
       refresher=self.refreshServer,
       )
+    self.mobile.peer._handleRequestRemote = LEGACY_makeRequestHandler(self.mobile.peer)
     self.mobileStore = self.mobile.addStore(self.mobileContext.Store(
       uri='mfile', displayName='Mobile File Client',
       agent=Agent(storage=self.mobileItems)))
