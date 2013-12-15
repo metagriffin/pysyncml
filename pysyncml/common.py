@@ -26,7 +26,12 @@ and classes used throughout the pysyncml package.
 
 import sys, time, calendar, inspect, six, pkg_resources, platform
 import xml.etree.ElementTree as ET
+import asset
+
 from . import constants
+
+#------------------------------------------------------------------------------
+version = asset.version('pysyncml')
 
 #------------------------------------------------------------------------------
 class SyncmlError(Exception): pass
@@ -188,16 +193,6 @@ def getMaxMemorySize(context=None):
         determine what the remote peer can support...
   '''
   return min(sys.maxint, int(pow(2,31)-1))
-
-#------------------------------------------------------------------------------
-# TODO: this does *NOT* seem like the /right/ way of doing this... LOL.
-class _Singleton:
-  @property
-  def versionString(self):
-    dist = pkg_resources.get_distribution('pysyncml')
-    return dist.version
-Singleton = _Singleton()
-versionString = Singleton.versionString
 
 #------------------------------------------------------------------------------
 def num2str(num):

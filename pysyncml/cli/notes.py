@@ -103,7 +103,7 @@ class NotesEngine(pysyncml.cli.DirectorySyncEngine):
       appLabel          = 'notes',
       appDisplay        = 'Note Synchronizer',
       devinfoParams     = dict(
-        softwareVersion   = pysyncml.versionString,
+        softwareVersion   = pysyncml.version,
         manufacturerName  = 'pysyncml',
         modelName         = 'pysyncml.cli.notes',
         ),

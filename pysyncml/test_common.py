@@ -19,7 +19,7 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 #------------------------------------------------------------------------------
 
-import unittest, re
+import unittest, re, six
 
 from . import common, constants
 from .common import adict
@@ -57,7 +57,7 @@ class TestCommon(unittest.TestCase):
   #----------------------------------------------------------------------------
   def test_version(self):
     # ensure that the version is always "MAJOR.MINOR.SOMETHING"
-    self.assertTrue(re.match(r'^[0-9]+\.[0-9]+\.[0-9a-z.-]*$', common.versionString)
+    self.assertTrue(re.match(r'^[0-9]+\.[0-9]+\.[0-9a-z.-]*$', common.version)
                     is not None)
 
   #----------------------------------------------------------------------------

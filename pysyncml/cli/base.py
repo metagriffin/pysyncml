@@ -254,7 +254,7 @@ class CommandLineSyncEngine(object):
     self.parser.add_argument(
       _('-V'), _('--version'),
       dest='version', action='version',
-      version='%(prog)s ' + pysyncml.versionString,
+      version='%(prog)s ' + pysyncml.version,
       help=_('displays the program version and exits'))
 
     # TODO: i18n!...
@@ -490,7 +490,7 @@ class CommandLineSyncEngine(object):
                             pysyncml.DEVTYPE_WORKSTATION,
         manufacturerName  = 'pysyncml',
         modelName         = self.appLabel,
-        softwareVersion   = pysyncml.versionString,
+        softwareVersion   = pysyncml.version,
         hierarchicalSync  = self.agent.hierarchicalSync if self.agent is not None else False,
         )
       if self.devinfoParams is not None:
@@ -640,7 +640,7 @@ class CommandLineSyncEngine(object):
     syncengine = self
     class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
       def version_string(self):
-        return 'pysyncml/' + pysyncml.versionString
+        return 'pysyncml/' + pysyncml.version
       def _parsePathParameters(self):
         self.path_params = dict()
         pairs = [e.split('=', 1) for e in self.path.split(';')[1:]]
