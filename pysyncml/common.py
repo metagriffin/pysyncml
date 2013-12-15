@@ -209,6 +209,59 @@ def num2str(num):
 
 #------------------------------------------------------------------------------
 def describeStats(stats, stream, title=None, details=True, totals=True, gettext=None):
+  '''
+  Renders an ASCII-table of the synchronization statistics `stats`,
+  example output:
+
+  .. code-block::
+
+    +----------------------------------------------------------------------------------+
+    |                                      TITLE                                       |
+    +----------+------+-------------------------+--------------------------+-----------+
+    |          |      |          Local          |          Remote          | Conflicts |
+    |   Source | Mode |  Add  | Mod | Del | Err |   Add  | Mod | Del | Err | Col | Mrg |
+    +----------+------+-------+-----+-----+-----+--------+-----+-----+-----+-----+-----+
+    | contacts |  <=  |   -   |  -  |  -  |  -  | 10,387 |  -  |  -  |  -  |  -  |  -  |
+    |     note |  SS  | 1,308 |  -  |   2 |  -  |    -   |  -  |  -  |  -  |  -  |  -  |
+    +----------+------+-------+-----+-----+-----+--------+-----+-----+-----+-----+-----+
+    |                  1,310 local changes and 10,387 remote changes.                  |
+    +----------------------------------------------------------------------------------+
+
+  :Parameters:
+
+  stats : dict
+
+    The synchronization stats returned by a call to Adapter.sync().
+
+  stream : file-like-object
+
+    An output file-like object that has at least a `write()` method,
+    e.g. ``sys.stdout`` can be used.
+
+  title : str, optional, default: null
+
+    A title placed at the top of the table -- if omitted (the default),
+    then no title is rendered.
+
+  details : bool, optional, default: true
+
+    If truthy, a per-datastore listing of changes will be displayed
+    (as in the above example).
+
+  totals : bool, optional, default: true
+
+    If truthy, a summary of all changes will be displayed (as in the
+    above example).
+
+  gettext : callable, optional, @DEPRECATED(0.2.0), default: null
+
+    A `gettext.gettext` compatible callable used for translating
+    localized content (such as number formatting, etc.).
+
+    NOTE: this parameter is deprecated, and will be replaced with
+    a generalized i18n solution.
+  '''
+
   from . import state
   modeStringLut = dict((
     (constants.SYNCTYPE_TWO_WAY,             '<>'),
@@ -223,19 +276,6 @@ def describeStats(stats, stream, title=None, details=True, totals=True, gettext=
     _ = gettext
   else:
     _ = lambda s: s
-
-  # OBJECTIVE:
-  # +----------------------------------------------------------------------------------+
-  # |                                      TITLE                                       |
-  # +----------+------+-------------------------+--------------------------+-----------+
-  # |          |      |          Local          |          Remote          | Conflicts |
-  # |   Source | Mode |  Add  | Mod | Del | Err |   Add  | Mod | Del | Err | Col | Mrg |
-  # +----------+------+-------+-----+-----+-----+--------+-----+-----+-----+-----+-----+
-  # | contacts |  <=  |   -   |  -  |  -  |  -  | 10,387 |  -  |  -  |  -  |  -  |  -  |
-  # |     note |  SS  | 1,308 |  -  |   2 |  -  |    -   |  -  |  -  |  -  |  -  |  -  |
-  # +----------+------+-------+-----+-----+-----+--------+-----+-----+-----+-----+-----+
-  # |                  1,310 local changes and 10,387 remote changes.                  |
-  # +----------------------------------------------------------------------------------+
 
   # todo: this does not handle the case where the title is wider than the table.
 
