@@ -301,8 +301,9 @@ class CommandLineSyncEngine(object):
              self.appDisplay))
 
     self.parser.add_argument(
-      _('-m'), _('--mode'),
+      _('-m'), _('--mode'), metavar=_('MODE'),
       dest='mode', default='sync', action='store',
+      choices=('sync', 'full', 'pull', 'push', 'pull-over', 'push-over'),
       help=_('set the synchronization mode - can be one of "sync"'
              ' (for two-way synchronization), "full" (for a complete'
              ' re-synchronization), "pull" (for fetching remote'
@@ -345,6 +346,7 @@ class CommandLineSyncEngine(object):
     self.parser.add_argument(
       _('-P'), _('--policy'), metavar=_('POLICY'),
       dest='policy', default=None, action='store',
+      choices=('error', 'client-wins', 'server-wins'),
       help=_('specifies the conflict resolution policy that this'
              ' SyncML peer (when operating as the server role) should use'
              ' to resolve conflicts that cannot be merged or otherwise'
